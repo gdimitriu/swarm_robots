@@ -22,6 +22,9 @@
 #include "camera_streaming.h"
 #include "esp_camera.h"
 #include <WiFi.h>
+
+#define CAMERA_MODEL_AI_THINKER
+
 #include "camera_pins.h"
 
 void startCameraServer();
@@ -77,7 +80,9 @@ void initCamera()
   // camera init
   esp_err_t err = esp_camera_init(&config);
   if (err != ESP_OK) {
+#ifdef SERIAL_DEBUG    
     Serial.printf("Camera init failed with error 0x%x", err);
+#endif    
     return;
   }
 

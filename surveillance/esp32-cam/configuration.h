@@ -58,19 +58,6 @@
  **********************************************/
 #define LEFT_MOTOR_PIN1 15
 
-/**********************************************
- * 
- * servo horizontally (x) pin
- * 
- **********************************************/
-#define SERVO_X_PIN 16
-
-/**********************************************
- * 
- * servo vertically (Y) pin
- * 
- **********************************************/
-#define SERVO_Y_PIN 4
 
 extern int currentPower;
 
@@ -86,4 +73,5 @@ void makeCleanup();
 
 void sendOK();
 
+//#define SERIAL_DEBUG
 #endif

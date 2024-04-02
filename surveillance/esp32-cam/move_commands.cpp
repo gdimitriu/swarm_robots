@@ -31,8 +31,6 @@ static const int engineLeft1Channel = 0;
 static const int engineLeft2Channel = 1;
 static const int engineRight1Channel = 2;
 static const int engineRight2Channel = 3;
-static const int servoXChannel = 4;
-static const int servoYChannel = 5;
 static const int freq = 50;
 static const int resolution = 12;
 
@@ -48,47 +46,6 @@ bool isValidNumber( char *data, int size )
    }
    return true;
 }
-
-bool moveOrRoatateWithDistanceCommand(char *realData) {
-  //remove m from command
-  realData++;
-  realData[strlen(realData)] = '\0';
-  int position;
-  for ( uint8_t i = 0; i < strlen(realData); i++ ) {
-    if ( realData[i] == ',' ) {
-      position = i;
-      break;
-    }
-  }
-  char buf[10];
-  for ( int i = 0; i < 10; i++ ) {
-    buf[i] = '\0';
-  }
-  for ( int i = 0 ; i < position; i++ ) {
-    buf[i] = realData[i];
-  }
-  int moveData = atoi(buf);
-  for ( int i = 0; i < 10; i++ ) {
-    buf[i] = '\0';
-  }
-  int idx = 0;
-  for ( int i = position + 1; i < strlen(realData); i++ ) {
-    buf[idx] = realData[i];
-    idx++;
-  }
-  int rotateData = atoi(buf);
-  if ( moveData == 0 && rotateData == 0 ) {
-    Serial.println("coasting");
-  } else if ( rotateData == 0 ) {
-    Serial.print("move=");Serial.println(rotateData);
-  } else {
-    Serial.print("rotate=");Serial.println(rotateData);
-  }
-  makeCleanup();
-  isValidInput = true;
-  return true;
-}
-
 
 bool setMaxPowerCommand(char *realData)
 {
@@ -184,7 +141,9 @@ bool moveOrRotateUntilNextCommand(char *realData)
     idx++;
   }
   int rotateData = atoi(buf);
+#ifdef SERIAL_DEBUG  
   Serial.print("move=");Serial.print(moveData);Serial.print(" rotate=");Serial.println(rotateData);
+#endif  
   if ( moveData == 0 && rotateData == 0 ) {
     go(0,0);
   } else if ( rotateData == 0 ) {
@@ -219,6 +178,7 @@ void setupEngines()
   // attach the channel to the GPI to be controlled
   ledcAttachPin(LEFT_MOTOR_PIN1, engineLeft1Channel);
   ledcAttachPin(LEFT_MOTOR_PIN2, engineLeft2Channel);
+
 }
 
 /*

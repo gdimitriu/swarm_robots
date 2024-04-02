@@ -24,8 +24,6 @@
 
 #include "configuration.h"
 
-bool moveOrRoatateWithDistanceCommand(char *realData);
-
 bool isValidNumber( char *data, int size );
 
 bool setMinPowerCommand(char *realData);

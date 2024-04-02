@@ -24,9 +24,11 @@
 #include "configuration.h"
 #include "move_commands.h"
 #include "camera_streaming.h"
+#include "soc/soc.h"
+#include "soc/rtc_cntl_reg.h"
 
-const char* ssid     = "xxx";
-const char* password = "xxx";
+const char* ssid     = "Skynet";
+const char* password = "12345678";
 
 WiFiServer server(SERVER_PORT);
 WiFiClient client;
@@ -42,30 +44,35 @@ boolean hasConnection = false;
 
 void setup()
 {
+    WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); //disable brownout detector
     isValidInput = false;
     cleanupSerial = false;
+#ifdef SERIAL_DEBUG    
     Serial.begin(115200);
-
+#endif
     delay(10);
 
     // We start by connecting to a WiFi network
-
+#ifdef SERIAL_DEBUG    
     Serial.println();
     Serial.println();
     Serial.print("Connecting to ");
     Serial.println(ssid);
-
+#endif
     WiFi.begin(ssid, password);
 
     while (WiFi.status() != WL_CONNECTED) {
         delay(500);
+#ifdef SERIAL_DEBUG            
         Serial.print(".");
+#endif        
     }
-
+#ifdef SERIAL_DEBUG
     Serial.println("");
     Serial.println("WiFi connected.");
     Serial.println("IP address: ");
     Serial.println(WiFi.localIP());
+#endif    
     setupEngines();
 
     initCamera();
@@ -74,13 +81,17 @@ void setup()
     client = server.available();   // listen for incoming clients
     if ( client ) {
       hasConnection = true;
+#ifdef SERIAL_DEBUG      
       Serial.println("New Client.");
+#endif
     }
 }
 
 void makeCleanup() {
+#ifdef SERIAL_DEBUG  
   Serial.print("MakeCleanup core=");Serial.println(xPortGetCoreID());
   Serial.flush();
+#endif  
   for ( indexReceive = 0; indexReceive < SERIAL_BUFFER; indexReceive++ ) {
     inData[indexReceive] = '\0';
   }
@@ -127,7 +138,9 @@ bool makeMove() {
       sprintf(buffer,"%d\r\n",0);
       client.print(buffer);
     } else if ( inData[0] == 'b' ) {  //break all engines
+#ifdef SERIAL_DEBUG      
       Serial.println("Break all engines");
+#endif      
       go(0,0);
     } else {
       sprintf(buffer,"%d\r\n",0);
@@ -168,8 +181,10 @@ void receiveCommands() {
   while ( client.connected() ) {
     while ( client.available() > 0 ) // Don't read unless there you know there is data
     {
+#ifdef SERIAL_DEBUG      
       Serial.print("receive core=");Serial.println(xPortGetCoreID());
       Serial.flush();
+#endif      
       if ( indexReceive < (SERIAL_BUFFER - 1) ) // One less than the size of the array
       {
           inChar = client.read(); // Read a character
@@ -191,12 +206,16 @@ void receiveCommands() {
     }
     if ( indexReceive >= 1 ) {
       if ( inData[indexReceive - 1] == '#' ) {
+#ifdef SERIAL_DEBUG        
         Serial.print("indexReceive = ");Serial.println(indexReceive);
         Serial.print("Make move = ");Serial.println(inData);
+#endif        
         makeMove();
       } else if ( cleanupSerial ) {
+#ifdef SERIAL_DEBUG        
         Serial.print("indexReceive = ");Serial.println(indexReceive);
         Serial.print("Make cleanup extern = ");Serial.println(inData);
+#endif        
         makeCleanup();
         cleanupSerial = false;
       } else {
@@ -205,7 +224,9 @@ void receiveCommands() {
     }
   }
  if ( !client.connected() ) {
+#ifdef SERIAL_DEBUG  
   Serial.println("Client disconnected!");Serial.flush();
+#endif  
   client.flush();
   client.stop();
   hasConnection = false;
@@ -215,8 +236,10 @@ void loop()
 {
   if ( !hasConnection ) {
     client = server.available();   // listen for incoming clients
-    if (client) {                             // if you get a client,
-        Serial.println("New Client.");           // print a message out the serial port
+    if (client) {
+#ifdef SERIAL_DEBUG
+        Serial.println("New Client.");
+#endif        
         hasConnection = true;
         receiveCommands();
     }
