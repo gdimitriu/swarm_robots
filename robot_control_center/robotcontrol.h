@@ -29,6 +29,7 @@
 #include <QStatusBar>
 #include <QLineEdit>
 #include <QMenu>
+#include <QListWidgetItem>
 
 namespace Ui {
 class RobotControl;
@@ -59,6 +60,7 @@ private slots:
     void saveAsFilePath();
     void deployNavigationPath();
     void fetchNavigationPath();
+    void displayCommandPathItem(QListWidgetItem *item);
     void addPathItem();
     void deletePathItem();
     void movePathItem();
@@ -68,6 +70,9 @@ private slots:
     void runBackwardWithPath();
     void connectStream();
     void disconnectStream();
+    void enableDebugMode();
+    void disableDebugMode();
+    void clearDebugMode();
 public:
     explicit RobotControl(QWidget *parent = 0);
     ~RobotControl();
@@ -108,6 +113,7 @@ private:
     //status line
     QLineEdit *currentFile;
     QLineEdit *statusLine;
+    volatile bool isDebugMode;
 };
 
 #endif // ROBOTCONTROL_H

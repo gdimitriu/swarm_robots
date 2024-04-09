@@ -23,6 +23,8 @@
 #include "ui_robotcontrol.h"
 #include <QMessageBox>
 #include <QFileDialog>
+#include <QFile>
+#include <fstream>
 
 RobotControl::RobotControl(QWidget *parent) :
     QMainWindow(parent),
@@ -36,6 +38,7 @@ RobotControl::RobotControl(QWidget *parent) :
     initUINavigation();
     isMinMaxPowerChanged = MIN_MAX_POWER_CHANGES::NONE;
     isDistanceChanged = DISTANCE_CHANGES::NONE;
+    isDebugMode = false;
 }
 
 RobotControl::~RobotControl()
@@ -95,7 +98,7 @@ void RobotControl::init()
     statusLine->setMaxLength(12);
     statusLine->setReadOnly(true);
     statusBar()->addWidget(statusLine);
-    label = new QLabel(tr("Current file: "), this);
+    label = new QLabel(tr("Current path file: "), this);
     statusBar()->addWidget(label);
     currentFile = new QLineEdit(this);
     currentFile->setReadOnly(true);
@@ -106,6 +109,11 @@ void RobotControl::init()
     connect(ui->disconnectStreamButton, SIGNAL(clicked(bool)), this, SLOT(disconnectStream()));
     ui->streamingType->addItem("http","http");
     ui->streamingType->addItem("vlc", "vlc");
+
+    //debug mode
+    connect(ui->startDebugButton, SIGNAL(clicked(bool)), this, SLOT(enableDebugMode()));
+    connect(ui->stopDebugButton, SIGNAL(clicked(bool)), this, SLOT(disableDebugMode()));
+    connect(ui->clearDebugButton, SIGNAL(clicked(bool)), this, SLOT(clearDebugMode()));
 }
 
 void RobotControl::initUINavigation()
@@ -122,6 +130,7 @@ void RobotControl::initUINavigation()
     connect(ui->deletePathButton, SIGNAL(clicked(bool)), this, SLOT(deletePathItem()));
     connect(ui->clearPathButton, SIGNAL(clicked(bool)), this, SLOT(clearPathItems()));
     connect(ui->replacePathButton, SIGNAL(clicked(bool)), this, SLOT(replacePathItem()));
+    connect(ui->listWidget, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(displayCommandPathItem(QListWidgetItem*)));
 
     //create Menu for path
     filePathMenu = menuBar()->addMenu(tr("&Navigation"));
@@ -158,14 +167,22 @@ void RobotControl::initUINavigation()
     filePathMenu->addSeparator();
     runFowardWithPathAction = new QAction(tr("Run forward"));
     runFowardWithPathAction->setStatusTip(tr("Run forward with the deployed navigation path"));
+    connect(runFowardWithPathAction, SIGNAL(triggered(bool)), this, SLOT(runForwardWithPath()));
     filePathMenu->addAction(runFowardWithPathAction);
     runBackwardWithPathAction = new QAction(tr("Run backward"));
     runBackwardWithPathAction->setStatusTip(tr("Run backward with the deployed navigation path"));
+    connect(runBackwardWithPathAction, SIGNAL(triggered(bool)), this, SLOT(runBackwardWithPath()));
     filePathMenu->addAction(runBackwardWithPathAction);
 
     ui->deployedType->addItem("Memory", QVariant::fromValue(DEPLOY_RUN_TYPE::MEMORY));
     ui->deployedType->addItem("File", QVariant::fromValue(DEPLOY_RUN_TYPE::FILE));
     ui->deployedType->addItem("EEPROM", QVariant::fromValue(DEPLOY_RUN_TYPE::EEPROM));
+}
+
+void RobotControl::displayCommandPathItem(QListWidgetItem *item)
+{
+    ui->newPathCommand->clear();
+    ui->newPathCommand->setText(item->text());
 }
 
 void RobotControl::connectTo()
@@ -314,6 +331,12 @@ QString RobotControl::sendWithReply(QString message)
         default:
             break;
         }
+        if ( isDebugMode )
+        {
+            ui->debugView->moveCursor(QTextCursor::End);
+            ui->debugView->insertPlainText("Send data: ");
+            ui->debugView->insertPlainText(message);
+        }
         socket->write(message.toLatin1());
         socket->flush();
         socket->waitForReadyRead();
@@ -323,6 +346,12 @@ QString RobotControl::sendWithReply(QString message)
             if ( readData.isEmpty() )
                 break;
             readData.append(localReadData);
+        }
+        if ( isDebugMode )
+        {
+            ui->debugView->moveCursor(QTextCursor::End);
+            ui->debugView->insertPlainText("Receiving data: ");
+            ui->debugView->insertPlainText(QString(readData));
         }
         return QString(readData);
     }
@@ -351,6 +380,12 @@ void RobotControl::sendOneWay(QString message, bool hasAck)
         default:
             break;
         }
+        if ( isDebugMode )
+        {
+            ui->debugView->moveCursor(QTextCursor::End);
+            ui->debugView->insertPlainText("Send data: ");
+            ui->debugView->insertPlainText(message);
+        }
         socket->write(message.toLatin1());
         socket->flush();
         if ( hasAck )
@@ -362,6 +397,12 @@ void RobotControl::sendOneWay(QString message, bool hasAck)
             {
                 socket->waitForReadyRead();
                 str.append(socket->readAll());
+            }
+            if ( isDebugMode )
+            {
+                ui->debugView->moveCursor(QTextCursor::End);
+                ui->debugView->insertPlainText("Receiving ack data: ");
+                ui->debugView->insertPlainText(str);
             }
         }
     }
@@ -555,9 +596,19 @@ void RobotControl::sendPowerToRobotIfModified()
 void RobotControl::loadFilePath()
 {
     QString filePath = QFileDialog::getOpenFileName(this, tr("Load Path File"), ".", tr("Text files (*.txt)"));
-    if ( filePath != nullptr || filePath.isEmpty() )
+    if ( filePath == nullptr || filePath.isEmpty() )
         return;
     currentFile->setText(filePath);
+    ui->listWidget->clear();
+    QFile inFile(currentFile->text());
+    if ( !inFile.open(QIODevice::ReadOnly | QIODevice::Text) )
+        return;
+    while ( !inFile.atEnd() )
+    {
+        QByteArray line = inFile.readLine();
+        ui->listWidget->addItem(QString::fromStdString(line.toStdString()).trimmed());
+    }
+    inFile.close();
 }
 
 void RobotControl::saveFilePath()
@@ -565,15 +616,30 @@ void RobotControl::saveFilePath()
     if ( currentFile->text().isEmpty() )
     {
         QMessageBox::critical(this, tr("First select a file."), tr("First select a file."), QMessageBox::Ok);
+        return;
     }
+    std::ofstream outFile;
+    outFile.open(currentFile->text().toStdString().c_str(), std::ios::trunc);
+    for ( int i = 0; i < ui->listWidget->count(); ++i )
+    {
+        outFile<<ui->listWidget->item(i)->text().toStdString()<<std::endl;
+    }
+    outFile.close();
 }
 
 void RobotControl::saveAsFilePath()
 {
     QString filePath = QFileDialog::getSaveFileName(this, tr("Save As Path File"), ".", tr("Text files (*.txt)"));
-    if ( filePath != nullptr || filePath.isEmpty() )
+    if ( filePath == nullptr || filePath.isEmpty() )
         return;
     currentFile->setText(filePath);
+    std::ofstream outFile;
+    outFile.open(currentFile->text().toStdString().c_str(), std::ios::trunc);
+    for ( int i = 0; i < ui->listWidget->count(); ++i )
+    {
+        outFile<<ui->listWidget->item(i)->text().toStdString()<<std::endl;
+    }
+    outFile.close();
 }
 
 void RobotControl::addPathItem()
@@ -684,6 +750,7 @@ void RobotControl::replacePathItem()
     }
     QListWidgetItem *element = ui->listWidget->currentItem();
     element->setText(ui->newPathCommand->text());
+    ui->replacePathButton->clearFocus();
 }
 
 void RobotControl::clearPathItems()
@@ -694,10 +761,38 @@ void RobotControl::clearPathItems()
 
 void RobotControl::deployNavigationPath()
 {
-    if ( !isConnected() )
+    if ( isConnected() )
     {
-        ui->deployButton->clearFocus();
-        return;
+        if ( ui->listWidget->count() == 0 )
+            return;
+        QString message;
+        message.append("n#");
+        sendOneWay(message, true);
+        switch((DEPLOY_RUN_TYPE) ui->deployedType->currentData().value<DEPLOY_RUN_TYPE>() )
+        {
+        case DEPLOY_RUN_TYPE::MEMORY :
+            break;
+        case DEPLOY_RUN_TYPE::FILE :
+        {
+            QString fileToDeploy = ui->deployedFile->text();
+            if ( fileToDeploy.isEmpty() )
+                return;
+            message.clear();
+            message.append("Nf");
+            message.append(fileToDeploy);
+            message.append("#");
+            sendOneWay(message, true);
+            break;
+        }
+        case DEPLOY_RUN_TYPE::EEPROM :
+            return;
+        }
+        for ( int i = 0; i < ui->listWidget->count(); ++i )
+        {
+            QString message("N");
+            message.append(ui->listWidget->item(i)->text());
+            sendOneWay(message, true);
+        }
     }
 }
 
@@ -705,23 +800,67 @@ void RobotControl::fetchNavigationPath()
 {
     if ( !isConnected() )
     {
-        ui->fetchButton->clearFocus();
+
         return;
     }
 }
 
 void RobotControl::runForwardWithPath()
 {
-    if ( !isConnected() )
+    if ( isConnected() )
     {
+        QString message;
+        switch((DEPLOY_RUN_TYPE) ui->deployedType->currentData().value<DEPLOY_RUN_TYPE>() )
+        {
+        case DEPLOY_RUN_TYPE::MEMORY :
+            message.clear();
+            message.append("D#");
+            break;
+        case DEPLOY_RUN_TYPE::FILE :
+        {
+            QString fileToDeploy = ui->deployedFile->text();
+            if ( fileToDeploy.isEmpty() )
+                return;
+            message.clear();
+            message.append("ND");
+            message.append(fileToDeploy);
+            message.append("#");
+            break;
+        }
+        case DEPLOY_RUN_TYPE::EEPROM :
+            return;
+        }
+        sendOneWay(message, true);
         return;
     }
 }
 
 void RobotControl::runBackwardWithPath()
 {
-    if ( !isConnected() )
+    if ( isConnected() )
     {
+        QString message;
+        switch((DEPLOY_RUN_TYPE) ui->deployedType->currentData().value<DEPLOY_RUN_TYPE>() )
+        {
+        case DEPLOY_RUN_TYPE::MEMORY :
+            message.clear();
+            message.append("B#");
+            break;
+        case DEPLOY_RUN_TYPE::FILE :
+        {
+            QString fileToDeploy = ui->deployedFile->text();
+            if ( fileToDeploy.isEmpty() )
+                return;
+            message.clear();
+            message.append("NB");
+            message.append(fileToDeploy);
+            message.append("#");
+            break;
+        }
+        case DEPLOY_RUN_TYPE::EEPROM :
+            return;
+        }
+        sendOneWay(message, true);
         return;
     }
 }
@@ -750,4 +889,22 @@ void RobotControl::disconnectStream()
 {
     ui->streamImage->close();
     ui->connectStreamButton->clearFocus();
+}
+
+void RobotControl::enableDebugMode()
+{
+    isDebugMode = true;
+    ui->startDebugButton->clearFocus();
+}
+
+void RobotControl::disableDebugMode()
+{
+    isDebugMode = false;
+    ui->stopDebugButton->clearFocus();
+}
+
+void RobotControl::clearDebugMode()
+{
+    ui->debugView->clear();
+    ui->clearDebugButton->clearFocus();
 }
