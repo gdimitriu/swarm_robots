@@ -25,6 +25,7 @@
 #include <QFileDialog>
 #include <QFile>
 #include <fstream>
+#include "robotcontroldashboard.h"
 
 RobotControl::RobotControl(QWidget *parent) :
     QMainWindow(parent),
@@ -134,17 +135,17 @@ void RobotControl::initUINavigation()
 
     //create Menu for path
     filePathMenu = menuBar()->addMenu(tr("&Navigation"));
-    loadFilePathAction = new QAction(tr("&Load File Path"), this);
+    loadFilePathAction = new QAction(tr("&Load Robot Path File"), this);
     loadFilePathAction->setShortcut(tr("Ctrl+L"));
     loadFilePathAction->setStatusTip(tr("Load a file which contains the robot path"));
     connect(loadFilePathAction, SIGNAL(triggered(bool)), this, SLOT(loadFilePath()));
     filePathMenu->addAction(loadFilePathAction);
-    saveFilePathAction = new QAction(tr("&Save File Path"), this);
+    saveFilePathAction = new QAction(tr("&Save Robot Path File"), this);
     saveFilePathAction->setShortcut(tr("Ctrl+S"));
     saveFilePathAction->setStatusTip(tr("Save a file which contains the robot path"));
     connect(saveFilePathAction, SIGNAL(triggered(bool)), this, SLOT(saveFilePath()));
     filePathMenu->addAction(saveFilePathAction);
-    saveAsFilePathAction = new QAction(tr("Save As File Path"), this);
+    saveAsFilePathAction = new QAction(tr("Save As Robot Path File"), this);
     saveAsFilePathAction->setShortcut(tr("Ctrl+A"));
     saveAsFilePathAction->setStatusTip(tr("Save a new file which contains the robot path"));
     connect(saveAsFilePathAction, SIGNAL(triggered(bool)), this, SLOT(saveAsFilePath()));
@@ -907,4 +908,33 @@ void RobotControl::clearDebugMode()
 {
     ui->debugView->clear();
     ui->clearDebugButton->clearFocus();
+}
+
+void RobotControl::setIpValue(QString value)
+{
+    ui->ipValue->clear();
+    ui->ipValue->setText(value);
+}
+
+void RobotControl::setPortValue(QString value)
+{
+    ui->portValue->clear();
+    ui->portValue->setText(value);
+}
+
+void RobotControl::setCameraPort(QString value)
+{
+    ui->cameraPort->setText(value);
+}
+
+void RobotControl::setCameraProtocol(QString value)
+{
+    ui->streamingType->setCurrentIndex(ui->streamingType->findText(value));
+}
+
+void RobotControl::closeEvent(QCloseEvent *event)
+{
+    RobotControlDashboard * caller = static_cast<RobotControlDashboard *>(parent());
+    event->accept();
+    caller->childIsClosed(this);
 }

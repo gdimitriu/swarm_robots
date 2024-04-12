@@ -1,10 +1,10 @@
-#include "robotcontrol.h"
+#include "robotcontroldashboard.h"
 #include <QApplication>
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    RobotControl w;
+    RobotControlDashboard w;
     w.show();
 
     return a.exec();

@@ -28,13 +28,21 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
         main.cpp \
-        robotcontrol.cpp
+        robotcontrol.cpp \
+    robotcontroldashboard.cpp \
+    jsonrobot.cpp \
+    jsoncamera.cpp
 
 HEADERS += \
-        robotcontrol.h
+        robotcontrol.h \
+    robotcontroldashboard.h \
+    jsonrobot.h \
+    jsoncamera.h
 
 FORMS += \
-        robotcontrol.ui
+        robotcontrol.ui \
+    robotcontroldashboard.ui
 
 DISTFILES += \
-    README.md
+    README.md \
+    robots.json

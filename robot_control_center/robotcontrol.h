@@ -82,6 +82,12 @@ public:
     Q_ENUM(ITEM_POSITION)
     enum class DEPLOY_RUN_TYPE {MEMORY = 0, FILE = 1, EEPROM = 2};
     Q_ENUM(DEPLOY_RUN_TYPE)
+    void setIpValue(QString value);
+    void setPortValue(QString value);
+    void setCameraPort(QString value);
+    void setCameraProtocol(QString value);
+protected:
+    void closeEvent(QCloseEvent *event);
 private:
     void init();
     void initUINavigation();
