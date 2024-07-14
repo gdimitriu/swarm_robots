@@ -54,15 +54,19 @@ Pxxxx# - play the xxxx file
 
 l - lcd operation
 
-n# - clear command list (from memory)
+lc# - clear lcd
 
-nxxx# - remove command file xxxx
+ln,xx,message# - print message on lcd on next line with xx font
 
-Nfxxx# - save the navigation data to file xxx from SD
+lf,xx,file# - print the file on lcd with xx font (only the number of messages that could be printed will be printed)
 
-Na# - start adding navigation data
+N# - clear command list (from memory)
 
-NA# - end adding navigation data
+Nfrxxx# - remove command file xxxx
+
+Nfsxxx# - save the navigation data to file xxx from SD
+
+Nflxxx# - load the navigation data from file xxx from SD
 
 Nxxxx# - add the xxxx command to navigation data (this should not have D or B command)
 

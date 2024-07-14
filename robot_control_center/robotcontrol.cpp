@@ -394,7 +394,7 @@ void RobotControl::sendOneWay(QString message, bool hasAck)
             socket->waitForReadyRead();
             QByteArray readData = socket->readAll();
             QString str(readData);
-            while ( !str.contains("OK\r\n") )
+            while ( !(str.contains("OK\r\n") || str.contains("OK\n")) )
             {
                 socket->waitForReadyRead();
                 str.append(socket->readAll());

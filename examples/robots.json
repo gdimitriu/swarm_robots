@@ -1,22 +1,30 @@
 {
     "robots": [
         {
-            "name": "recon",
-            "ip": "192.168.1.16",
-            "port": "4242",
             "camera": {
-                "present": "yes",
                 "port": "80",
+                "present": "yes",
                 "protocol": "http"
-            }
+            },
+            "ip": "192.168.1.28",
+            "name": "recon",
+            "port": "4242"
         },
         {
-            "name": "round",
-            "ip": "192.168.1.17",
-            "port": "4242",
             "camera": {
                 "present": "no"
-            }
+            },
+            "ip": "192.168.1.20",
+            "name": "round",
+            "port": "4242"
+        },
+        {
+            "camera": {
+                "present": "no"
+            },
+            "ip": "192.168.1.30",
+            "name": "zumo",
+            "port": "4242"
         }
     ]
 }
