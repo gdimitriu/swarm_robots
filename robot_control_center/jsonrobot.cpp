@@ -71,3 +71,9 @@ QString JsonRobot::cameraProtocol() const
     return camera->getProtocol();
 }
 
+QString JsonRobot::hasStartStop() const
+{
+    if ( camera == nullptr)
+        return QString("No");
+    return camera->startStopCommand();
+}

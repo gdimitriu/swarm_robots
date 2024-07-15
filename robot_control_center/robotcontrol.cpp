@@ -26,6 +26,8 @@
 #include <QFile>
 #include <fstream>
 #include "robotcontroldashboard.h"
+#include <QWebEngineView>
+#include <VLCQtWidgets/WidgetVideo.h>
 
 RobotControl::RobotControl(QWidget *parent) :
     QMainWindow(parent),
@@ -40,6 +42,10 @@ RobotControl::RobotControl(QWidget *parent) :
     isMinMaxPowerChanged = MIN_MAX_POWER_CHANGES::NONE;
     isDistanceChanged = DISTANCE_CHANGES::NONE;
     isDebugMode = false;
+    vlcInstance = nullptr;
+    vlcMedia = nullptr;
+    vlcPlayer = nullptr;
+    streamImageOrig = ui->streamImage;
 }
 
 RobotControl::~RobotControl()
@@ -110,6 +116,8 @@ void RobotControl::init()
     connect(ui->disconnectStreamButton, SIGNAL(clicked(bool)), this, SLOT(disconnectStream()));
     ui->streamingType->addItem("http","http");
     ui->streamingType->addItem("vlc", "vlc");
+    ui->startStopCommands->addItem("Yes", "Yes");
+    ui->startStopCommands->addItem("No", "No");
 
     //debug mode
     connect(ui->startDebugButton, SIGNAL(clicked(bool)), this, SLOT(enableDebugMode()));
@@ -878,18 +886,65 @@ bool RobotControl::isConnected()
 
 void RobotControl::connectStream()
 {
+    QByteArray geometry = ui->streamImage->saveGeometry();
+    QSize size = ui->streamImage->size();
     if ( ui->streamingType->currentText() == QString("http") )
     {
         QUrl url("http://" + ui->ipValue->text() + ":" + ui->cameraPort->text());
-        ui->streamImage->load(url);
+        QWebEngineView *webengine = new QWebEngineView(this);
+        ui->streamImage = webengine;
+        ((QWebEngineView *)ui->streamImage)->load(url);
     }
+    else if ( ui->streamingType->currentText() == QString("vlc") )
+    {
+        QString url("tcp/mjpeg://" + ui->ipValue->text() + ":" + ui->cameraPort->text());
+        VlcWidgetVideo *vlcWidget = new VlcWidgetVideo(ui->centralWidget);
+        ui->streamImage = vlcWidget;
+        if (vlcInstance == nullptr )
+        {
+            vlcInstance = new VlcInstance(VlcCommon::args(), this);
+        }
+        if (vlcPlayer != nullptr)
+        {
+            delete vlcPlayer;
+        }
+        vlcPlayer = new VlcMediaPlayer(vlcInstance);
+        vlcPlayer->setVideoWidget(vlcWidget);
+        vlcWidget->setMediaPlayer(vlcPlayer);
+        if ( vlcMedia != nullptr )
+        {
+            delete vlcMedia;
+        }
+        vlcMedia = new VlcMedia(url,vlcInstance);
+        vlcPlayer->open(vlcMedia);
+    }
+    ui->streamImage->restoreGeometry(geometry);
+    ui->streamImage->setEnabled(true);
+    ui->streamImage->resize(size);
+    ui->streamImage->adjustSize();
+    ui->streamImage->show();
+    this->repaint();
     ui->connectStreamButton->clearFocus();
 }
 
 void RobotControl::disconnectStream()
 {
-    ui->streamImage->close();
-    ui->connectStreamButton->clearFocus();
+    if ( ui->streamingType->currentText() == QString("http") )
+    {
+        ((QWebEngineView *)ui->streamImage)->close();
+    }
+    else if ( ui->streamingType->currentText() == QString("vlc") )
+    {
+        vlcPlayer->stop();
+        delete vlcPlayer;
+        vlcPlayer = nullptr;
+        delete vlcMedia;
+        vlcMedia = nullptr;
+    }
+    delete ui->streamImage;
+    ui->streamImage = streamImageOrig;
+    this->repaint();
+    ui->disconnectButton->clearFocus();
 }
 
 void RobotControl::enableDebugMode()
@@ -937,4 +992,9 @@ void RobotControl::closeEvent(QCloseEvent *event)
     RobotControlDashboard * caller = static_cast<RobotControlDashboard *>(parent());
     event->accept();
     caller->childIsClosed(this);
+}
+
+void RobotControl::setCameraCommands(QString value)
+{
+    ui->startStopCommands->setCurrentIndex(ui->startStopCommands->findText(value));
 }

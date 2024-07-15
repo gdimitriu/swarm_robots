@@ -9,20 +9,20 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1300</width>
-    <height>800</height>
+    <width>1600</width>
+    <height>900</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>1300</width>
-    <height>800</height>
+    <width>1600</width>
+    <height>900</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>1300</width>
-    <height>800</height>
+    <width>1600</width>
+    <height>900</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -131,33 +131,6 @@
       <width>121</width>
       <height>32</height>
      </rect>
-    </property>
-   </widget>
-   <widget class="QWebEngineView" name="streamImage">
-    <property name="geometry">
-     <rect>
-      <x>530</x>
-      <y>90</y>
-      <width>591</width>
-      <height>501</height>
-     </rect>
-    </property>
-    <property name="minimumSize">
-     <size>
-      <width>591</width>
-      <height>501</height>
-     </size>
-    </property>
-    <property name="maximumSize">
-     <size>
-      <width>591</width>
-      <height>501</height>
-     </size>
-    </property>
-    <property name="url">
-     <url>
-      <string>about:blank</string>
-     </url>
     </property>
    </widget>
    <widget class="QListWidget" name="listWidget">
@@ -403,9 +376,9 @@
    <widget class="QPlainTextEdit" name="debugView">
     <property name="geometry">
      <rect>
-      <x>660</x>
-      <y>600</y>
-      <width>461</width>
+      <x>650</x>
+      <y>700</y>
+      <width>571</width>
       <height>131</height>
      </rect>
     </property>
@@ -416,8 +389,8 @@
    <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
-      <x>540</x>
-      <y>600</y>
+      <x>530</x>
+      <y>700</y>
       <width>94</width>
       <height>116</height>
      </rect>
@@ -451,7 +424,7 @@
      <rect>
       <x>10</x>
       <y>40</y>
-      <width>1067</width>
+      <width>1224</width>
       <height>38</height>
      </rect>
     </property>
@@ -509,6 +482,16 @@
        <item>
         <widget class="QComboBox" name="streamingType"/>
        </item>
+       <item>
+        <widget class="QLabel" name="startStop">
+         <property name="text">
+          <string>Start/Stop</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="startStopCommands"/>
+       </item>
       </layout>
      </item>
     </layout>
@@ -552,10 +535,37 @@
      </property>
     </widget>
    </widget>
+   <widget class="QWidget" name="streamImage" native="true">
+    <property name="geometry">
+     <rect>
+      <x>580</x>
+      <y>120</y>
+      <width>751</width>
+      <height>531</height>
+     </rect>
+    </property>
+    <property name="minimumSize">
+     <size>
+      <width>751</width>
+      <height>531</height>
+     </size>
+    </property>
+    <property name="maximumSize">
+     <size>
+      <width>751</width>
+      <height>531</height>
+     </size>
+    </property>
+    <property name="baseSize">
+     <size>
+      <width>751</width>
+      <height>531</height>
+     </size>
+    </property>
+   </widget>
    <zorder>layoutWidget</zorder>
    <zorder>layoutWidget</zorder>
    <zorder>layoutWidget</zorder>
-   <zorder>streamImage</zorder>
    <zorder>layoutWidget</zorder>
    <zorder>layoutWidget</zorder>
    <zorder>layoutWidget</zorder>
@@ -564,13 +574,14 @@
    <zorder>listWidget</zorder>
    <zorder>debugView</zorder>
    <zorder>groupBox</zorder>
+   <zorder>streamImage</zorder>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1300</width>
+     <width>1600</width>
      <height>30</height>
     </rect>
    </property>
@@ -578,13 +589,6 @@
   <widget class="QStatusBar" name="statusBar"/>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <customwidgets>
-  <customwidget>
-   <class>QWebEngineView</class>
-   <extends>QWidget</extends>
-   <header location="global">QtWebEngineWidgets/QWebEngineView</header>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections/>
 </ui>

@@ -70,6 +70,18 @@ void RobotControlDashboard::launchRobot()
         {
             robot->setCameraPort(ui->cameraPortValue->text());
             robot->setCameraProtocol(ui->streamingType->currentText());
+            if ( ui->hasCommands->isChecked() )
+            {
+                robot->setCameraCommands("Yes");
+            }
+            else
+            {
+                robot->setCameraCommands("No");
+            }
+        }
+        else
+        {
+            robot->setCameraCommands("No");
         }
         robot->show();
     }
@@ -162,12 +174,19 @@ void RobotControlDashboard::displayrobotItem(QListWidgetItem *item)
         ui->noCamera->setChecked(false);
         ui->cameraPortValue->setText(robot->cameraPort());
         ui->streamingType->setCurrentIndex(ui->streamingType->findText(robot->cameraProtocol()));
+        if ( robot->hasStartStop().compare("yes", Qt::CaseInsensitive) == 0 )
+        {
+            ui->hasCommands->setChecked(true);
+            ui->noCommands->setChecked(false);
+        }
     }
     else
     {
         ui->hasCamera->setChecked(false);
         ui->noCamera->setChecked(true);
         ui->cameraPortValue->clear();
+        ui->hasCommands->setChecked(false);
+        ui->noCommands->setChecked(true);
     }
 }
 

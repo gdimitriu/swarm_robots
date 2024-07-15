@@ -30,6 +30,11 @@
 #include <QLineEdit>
 #include <QMenu>
 #include <QListWidgetItem>
+//vlc
+#include <VLCQtCore/Common.h>
+#include <VLCQtCore/Instance.h>
+#include <VLCQtCore/Media.h>
+#include <VLCQtCore/MediaPlayer.h>
 
 namespace Ui {
 class RobotControl;
@@ -86,6 +91,7 @@ public:
     void setPortValue(QString value);
     void setCameraPort(QString value);
     void setCameraProtocol(QString value);
+    void setCameraCommands(QString value);
 protected:
     void closeEvent(QCloseEvent *event);
 private:
@@ -120,6 +126,10 @@ private:
     QLineEdit *currentFile;
     QLineEdit *statusLine;
     volatile bool isDebugMode;
+    VlcInstance *vlcInstance;
+    VlcMedia *vlcMedia;
+    VlcMediaPlayer *vlcPlayer;
+    QWidget *streamImageOrig;
 };
 
 #endif // ROBOTCONTROL_H

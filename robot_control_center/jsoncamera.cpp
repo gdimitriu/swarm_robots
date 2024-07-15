@@ -19,6 +19,7 @@ void JsonCamera::read(const QJsonObject &json)
     {
         port = json["port"].toString();
         protocol = json["protocol"].toString();
+        hasStartStop = json["startstop"].toString();
     }
     else
     {
@@ -35,6 +36,7 @@ void JsonCamera::write(QJsonObject &json) const
     {
         json["port"] = port;
         json["protocol"] = protocol;
+        json["startstop"] = hasStartStop;
     }
 }
 
@@ -51,4 +53,9 @@ QString JsonCamera::getPort() const
 QString JsonCamera::getProtocol() const
 {
     return protocol;
+}
+
+QString JsonCamera::startStopCommand() const
+{
+    return hasStartStop;
 }

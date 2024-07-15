@@ -15,10 +15,12 @@ public:
     QString isPresent() const;
     QString getPort() const;
     QString getProtocol() const;
+    QString startStopCommand() const;
 private:
     QString present;
     QString port;
     QString protocol;
+    QString hasStartStop;
 
 };
 

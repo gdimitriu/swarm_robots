@@ -19,6 +19,7 @@ public:
     QString hasCamera() const;
     QString cameraPort() const;
     QString cameraProtocol() const;
+    QString hasStartStop() const;
 private:
     QString name;
     QString ip;
