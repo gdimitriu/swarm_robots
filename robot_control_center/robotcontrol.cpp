@@ -920,8 +920,7 @@ void RobotControl::connectStream()
     }
     ui->streamImage->restoreGeometry(geometry);
     ui->streamImage->setEnabled(true);
-    ui->streamImage->resize(size);
-    ui->streamImage->adjustSize();
+    ui->streamImage->setFixedSize(size);
     ui->streamImage->show();
     this->repaint();
     ui->connectStreamButton->clearFocus();
@@ -944,7 +943,7 @@ void RobotControl::disconnectStream()
     delete ui->streamImage;
     ui->streamImage = streamImageOrig;
     this->repaint();
-    ui->disconnectButton->clearFocus();
+    ui->disconnectStreamButton->clearFocus();
 }
 
 void RobotControl::enableDebugMode()
