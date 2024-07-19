@@ -54,7 +54,7 @@ void RobotControlDashboard::populateUi()
     connect(ui->launchButton, SIGNAL(clicked(bool)), this, SLOT(launchRobot()));
     connect(ui->addRobotButton, SIGNAL(clicked(bool)), this, SLOT(addRobot()));
     connect(ui->robotList, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(displayrobotItem(QListWidgetItem*)));
-
+    connect(ui->deleteRobotButton, SIGNAL(clicked(bool)), this, SLOT(deleteRobot()));
 }
 
 void RobotControlDashboard::launchRobot()
@@ -90,7 +90,43 @@ void RobotControlDashboard::launchRobot()
 
 void RobotControlDashboard::addRobot()
 {
+    JsonRobot *robot = new JsonRobot(this);
+    JsonCamera *camera = new JsonCamera(this);
+    robot->setName(ui->robotNameValue->text());
+    robot->setIp(ui->ipValue->text());
+    robot->setPort(ui->portValue->text());
+    robot->setCamera(camera);
+    if ( ui->hasCamera->isChecked() )
+    {
+        camera->setPresent("Yes");
+        camera->setPort(ui->cameraPortValue->text());
+        if ( ui->hasCommands->isChecked() ) {
+            camera->setStartStopCommand("Yes");
+        }
+        else
+        {
+            camera->setStartStopCommand("No");
+        }
+        camera->setProtocol(ui->streamingType->currentText());
+    }
+    else
+    {
+        camera->setPresent("No");
+    }
+    robots.insert(ui->robotNameValue->text(), robot);
+    ui->robotList->addItem(robot->getName());
     ui->addRobotButton->clearFocus();
+}
+
+void RobotControlDashboard::deleteRobot()
+{
+    QListWidgetItem *currentSelection = ui->robotList->takeItem(ui->robotList->currentRow());
+    QMap<QString, JsonRobot *>::ConstIterator iterator = robots.find(currentSelection->text());
+    JsonRobot *robot = *iterator;
+    robots.remove(currentSelection->text());
+    delete robot;
+
+    ui->deleteRobotButton->clearFocus();
 }
 
 void RobotControlDashboard::loadRobots()

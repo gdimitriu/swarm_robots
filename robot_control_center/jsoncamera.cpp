@@ -59,3 +59,23 @@ QString JsonCamera::startStopCommand() const
 {
     return hasStartStop;
 }
+
+void JsonCamera::setPresent(QString present)
+{
+    this->present = present;
+}
+
+void JsonCamera::setPort(QString port)
+{
+    this->port = port;
+}
+
+void JsonCamera::setProtocol(QString protocol)
+{
+    this->protocol = protocol;
+}
+
+void JsonCamera::setStartStopCommand(QString hasStartStop)
+{
+    this->hasStartStop = hasStartStop;
+}

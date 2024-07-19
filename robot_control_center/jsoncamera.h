@@ -13,9 +13,13 @@ public:
     void read(const QJsonObject &json);
     void write(QJsonObject &json) const;
     QString isPresent() const;
+    void setPresent(QString present);
     QString getPort() const;
+    void setPort(QString port);
     QString getProtocol() const;
+    void setProtocol(QString protocol);
     QString startStopCommand() const;
+    void setStartStopCommand(QString hasStartStop);
 private:
     QString present;
     QString port;

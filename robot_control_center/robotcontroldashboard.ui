@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>529</width>
+    <width>649</width>
     <height>671</height>
    </rect>
   </property>
@@ -46,7 +46,7 @@
    <widget class="QPushButton" name="addRobotButton">
     <property name="geometry">
      <rect>
-      <x>110</x>
+      <x>530</x>
       <y>30</y>
       <width>88</width>
       <height>34</height>
@@ -56,7 +56,7 @@
      <string>Add</string>
     </property>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>12</x>
@@ -107,7 +107,7 @@
     <property name="title">
      <string>Has Start/Stop</string>
     </property>
-    <widget class="QWidget" name="">
+    <widget class="QWidget" name="layoutWidget">
      <property name="geometry">
       <rect>
        <x>10</x>
@@ -189,7 +189,7 @@
      </property>
     </widget>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>13</x>
@@ -251,13 +251,26 @@
      </item>
     </layout>
    </widget>
+   <widget class="QPushButton" name="deleteRobotButton">
+    <property name="geometry">
+     <rect>
+      <x>530</x>
+      <y>70</y>
+      <width>88</width>
+      <height>34</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Delete</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>529</width>
+     <width>649</width>
      <height>30</height>
     </rect>
    </property>

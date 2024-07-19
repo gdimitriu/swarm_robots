@@ -886,6 +886,11 @@ bool RobotControl::isConnected()
 
 void RobotControl::connectStream()
 {
+    if ( ui->startStopCommands->currentText().compare("yes",Qt::CaseInsensitive) == 0 )
+    {
+        QString value = "T#";
+        sendOneWay(value);
+    }
     QByteArray geometry = ui->streamImage->saveGeometry();
     QSize size = ui->streamImage->size();
     if ( ui->streamingType->currentText() == QString("http") )
@@ -928,6 +933,11 @@ void RobotControl::connectStream()
 
 void RobotControl::disconnectStream()
 {
+    if ( ui->startStopCommands->currentText().compare("yes",Qt::CaseInsensitive) == 0 )
+    {
+        QString value = "t#";
+        sendOneWay(value);
+    }
     if ( ui->streamingType->currentText() == QString("http") )
     {
         ((QWebEngineView *)ui->streamImage)->close();

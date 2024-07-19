@@ -5,6 +5,14 @@ JsonRobot::JsonRobot(QObject *parent) : QObject(parent)
     camera = nullptr;
 }
 
+JsonRobot::~JsonRobot()
+{
+    if ( camera != nullptr )
+    {
+        delete camera;
+    }
+}
+
 JsonRobot::JsonRobot(QObject *parent, QString name, QString ip,QString port, JsonCamera *camera) : QObject(parent)
 {
     this->name = name;
@@ -76,4 +84,24 @@ QString JsonRobot::hasStartStop() const
     if ( camera == nullptr)
         return QString("No");
     return camera->startStopCommand();
+}
+
+void JsonRobot::setName(QString name)
+{
+    this->name = name;
+}
+
+void JsonRobot::setIp(QString ip)
+{
+    this->ip = ip;
+}
+
+void JsonRobot::setPort(QString port)
+{
+    this->port = port;
+}
+
+void JsonRobot::setCamera(JsonCamera *camera)
+{
+    this->camera = camera;
 }

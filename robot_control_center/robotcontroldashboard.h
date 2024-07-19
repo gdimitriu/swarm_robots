@@ -25,6 +25,7 @@ public:
 private slots:
     void launchRobot();
     void addRobot();
+    void deleteRobot();
     void loadRobots();
     void saveRobots();
     void saveAsRobots();
