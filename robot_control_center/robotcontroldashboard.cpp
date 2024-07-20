@@ -6,6 +6,7 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 #include <QJsonArray>
+#include <QThread>
 
 RobotControlDashboard::RobotControlDashboard(QWidget *parent) :
     QMainWindow(parent),
@@ -61,7 +62,10 @@ void RobotControlDashboard::launchRobot()
 {
     if ( !ui->robotNameValue->text().isEmpty() )
     {
+        QThread *thread = new QThread();
         RobotControl *robot = new RobotControl(this);
+        robot->moveToThread(thread);
+        connect(thread, &QThread::finished, robot, &QObject::deleteLater);
         launchedRobots.insert(ui->robotNameValue->text(), robot);
         robot->setIpValue(ui->ipValue->text());
         robot->setPortValue(ui->portValue->text());
@@ -84,6 +88,7 @@ void RobotControlDashboard::launchRobot()
             robot->setCameraCommands("No");
         }
         robot->show();
+        thread->start();
     }
     ui->launchButton->clearFocus();
 }
