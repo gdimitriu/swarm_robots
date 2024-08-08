@@ -2,9 +2,21 @@
     "robots": [
         {
             "camera": {
+                "port": "8180",
+                "present": "Yes",
+                "protocol": "vlc",
+                "startstop": "Yes"
+            },
+            "ip": "192.168.1.41",
+            "name": "4wd",
+            "port": "8080"
+        },
+        {
+            "camera": {
                 "port": "80",
                 "present": "yes",
-                "protocol": "http"
+                "protocol": "http",
+                "startstop": "No"
             },
             "ip": "192.168.1.28",
             "name": "recon",
@@ -14,7 +26,7 @@
             "camera": {
                 "present": "no"
             },
-            "ip": "192.168.1.20",
+            "ip": "192.168.1.17",
             "name": "round",
             "port": "4242"
         },
@@ -22,7 +34,7 @@
             "camera": {
                 "present": "no"
             },
-            "ip": "192.168.1.30",
+            "ip": "192.168.1.10",
             "name": "zumo",
             "port": "4242"
         }
