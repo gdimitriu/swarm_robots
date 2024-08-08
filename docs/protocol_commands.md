@@ -1,10 +1,12 @@
 # Moving processor from waiter robot (command controll robot) or normal moving robot
 
-## Those are also commands from droid controll center android app
+## Those are also commands from droid control center android app and robot control center
 
 ### Get Values
 
-I# - 
+I# - return camera information 
+
+wifi:address1,address2#StreamCamera:camera_status,camera_protocol,camera_port,camera_codec,camera_framerate#
 
 V# - get the maximum power
 
@@ -60,7 +62,7 @@ ln,xx,message# - print message on lcd on next line with xx font
 
 lf,xx,file# - print the file on lcd with xx font (only the number of messages that could be printed will be printed)
 
-N# - clear command list (from memory)
+n# - clear command list (from memory)
 
 Nfrxxx# - remove command file xxxx
 
@@ -85,3 +87,7 @@ NR# - move using RFID stickers
 Txvalue# tilt the camera on horizontaly with the value from the actual possition
 
 Tyvalue# tilt the camera on vertically with the value from the actual possition
+
+T# start streaming camera (only on raspeberry pi zero w)
+
+t# stop streaming camera (only on raspeberry pi zero w)
