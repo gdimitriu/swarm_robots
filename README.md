@@ -21,17 +21,17 @@ It is only controlled by human using [robot_control_center](robot_control_center
 
 ### Raspberry Pi Zero W
 
-This is based on Raspberry Pi Zero W using RT linux [raspberrypiZeroDroid](raspberrypiZeroDroid/README.md)
+This is based on Raspberry Pi Zero W using RT linux [raspberrypiZeroDroid](https://github.com/gdimitriu/raspberrypiZeroDroid/README.md)
 
 ### Raspberry pico
 
-This holds two robots (one with round chassy and one using zumo) [raspberryPicoDroids](raspberryPicoDroids/README.md)
+This holds two robots (one with round chassy and one using zumo) [raspberryPicoDroids](https://github.com/gdimitriu/raspberryPicoDroids/README.md)
 
 Latest versions are based on raspberry pico W microcontroller using wifi, encoders and some type of sensors.
 
 ### Waiter Home Robot
 
-This is an unfinished robot (work in progress) using multiple microcontrollers [waiterHomeRobot](waiterHomeRobot/README.md).
+This is an unfinished robot (work in progress) using multiple microcontrollers [waiterHomeRobot](https://github.com/gdimitriu/waiterHomeRobot/README.md).
 
 It is a big robot using special chassy and engines.
 
