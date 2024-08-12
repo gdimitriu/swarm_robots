@@ -1,6 +1,3 @@
-[submodule "waiterHomeRobot"]
-	path = waiterHomeRobot
-	url = git@github.com:gdimitriu/waiterHomeRobot.git
 [submodule "raspberryPicoDroids"]
 	path = raspberryPicoDroids
 	url = git@github.com:gdimitriu/raspberryPicoDroids.git
