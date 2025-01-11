@@ -64,6 +64,9 @@ private slots:
     void saveFilePath();
     void saveAsFilePath();
     void deployNavigationPath();
+    void saveDeployedPathToFile();
+    void loadNavigationPathFromFile();
+    void removeNavigationPathFile();
     void fetchNavigationPath();
     void displayCommandPathItem(QListWidgetItem *item);
     void addPathItem();
@@ -116,6 +119,9 @@ private:
     QAction *saveFilePathAction;
     QAction *saveAsFilePathAction;
     QAction *deployNavigationPathAction;
+    QAction *saveDeployedPathToFileAction;
+    QAction *removeNavigationPathFileAction;
+    QAction *loadNavigationPathFromFileAction;
     QAction *fetchNavigationPathAction;
     QAction *runFowardWithPathAction;
     QAction *runBackwardWithPathAction;

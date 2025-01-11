@@ -166,6 +166,18 @@ void RobotControl::initUINavigation()
     deployNavigationPathAction->setStatusTip(tr("Deploy path to the robot"));
     connect(deployNavigationPathAction, SIGNAL(triggered(bool)), this, SLOT(deployNavigationPath()));
     filePathMenu->addAction(deployNavigationPathAction);
+    saveDeployedPathToFileAction = new QAction(tr("Save deployed path to file"));
+    saveDeployedPathToFileAction->setStatusTip(tr("Save already deployed path to file"));
+    connect(saveDeployedPathToFileAction, SIGNAL(triggered(bool)), this, SLOT(saveDeployedPathToFile()));
+    filePathMenu->addAction(saveDeployedPathToFileAction);
+    loadNavigationPathFromFileAction = new QAction(tr("Load path from file"));
+    loadNavigationPathFromFileAction->setStatusTip(tr("Load path to memory from deployed file"));
+    connect(loadNavigationPathFromFileAction, SIGNAL(triggered(bool)), this, SLOT(loadNavigationPathFromFile()));
+    filePathMenu->addAction(loadNavigationPathFromFileAction);
+    removeNavigationPathFileAction = new QAction(tr("Remove path file"));
+    removeNavigationPathFileAction->setStatusTip(tr("Remove deployed path file from robot"));
+    connect(removeNavigationPathFileAction, SIGNAL(triggered(bool)), this, SLOT(removeNavigationPathFile()));
+    filePathMenu->addAction(removeNavigationPathFileAction);
     fetchNavigationPathAction = new QAction(tr("&Fetch path"));
     fetchNavigationPathAction->setShortcut(tr("Ctrl+F"));
     fetchNavigationPathAction->setStatusTip(tr("Fetch path from the robot"));
@@ -207,6 +219,7 @@ void RobotControl::disconnectFrom()
 {
     if ( socket != nullptr )
     {
+        sendOneWay("exit#", false);
         socket->disconnectFromHost();
         socket->close();
         delete socket;
@@ -770,6 +783,7 @@ void RobotControl::clearPathItems()
 
 void RobotControl::deployNavigationPath()
 {
+    bool isFile = false;
     if ( isConnected() )
     {
         if ( ui->listWidget->count() == 0 )
@@ -787,10 +801,11 @@ void RobotControl::deployNavigationPath()
             if ( fileToDeploy.isEmpty() )
                 return;
             message.clear();
-            message.append("Nf");
+            message.append("Nfb");
             message.append(fileToDeploy);
             message.append("#");
             sendOneWay(message, true);
+            isFile = true;
             break;
         }
         case DEPLOY_RUN_TYPE::EEPROM :
@@ -802,7 +817,61 @@ void RobotControl::deployNavigationPath()
             message.append(ui->listWidget->item(i)->text());
             sendOneWay(message, true);
         }
+        if(isFile == true)
+        {
+            message.clear();
+            message.append("Nfe#");
+            sendOneWay(message, true);
+        }
     }
+}
+
+void RobotControl::saveDeployedPathToFile()
+{
+    if ( !isConnected() )
+    {
+        return;
+    }
+    QString fileToDeploy = ui->deployedFile->text();
+    if ( fileToDeploy.isEmpty() )
+        return;
+    QString message;
+    message.append("Nfs");
+    message.append(fileToDeploy);
+    message.append("#");
+    sendOneWay(message, true);
+}
+
+void RobotControl::loadNavigationPathFromFile()
+{
+    if ( !isConnected() )
+    {
+        return;
+    }
+    QString fileToDeploy = ui->deployedFile->text();
+    if ( fileToDeploy.isEmpty() )
+        return;
+    QString message;
+    message.append("Nfl");
+    message.append(fileToDeploy);
+    message.append("#");
+    sendOneWay(message, true);
+}
+
+void RobotControl::removeNavigationPathFile()
+{
+    if ( !isConnected() )
+    {
+        return;
+    }
+    QString fileToDeploy = ui->deployedFile->text();
+    if ( fileToDeploy.isEmpty() )
+        return;
+    QString message;
+    message.append("Nfr");
+    message.append(fileToDeploy);
+    message.append("#");
+    sendOneWay(message, true);
 }
 
 void RobotControl::fetchNavigationPath()
