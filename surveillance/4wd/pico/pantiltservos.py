@@ -1,7 +1,7 @@
 """
  moving robot raspberry pico and wifi from ESP32-CAM
 
- servo (moving servo)
+oantiltservos (moving servos for camera)
 
  Copyright 2025 Gabriel Dimitriu
   This file is part of swarm_robots project.
@@ -20,34 +20,28 @@
  along with swarm_robots; if not, write to the Free Software
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
 """
-
+from servo_lib import Servo
 import configuration
-# Set Duty Cycle for Different Angles
-_max_duty = 7864
-_min_duty = 1000
-_half_duty = int(_max_duty / 2)
-
-# Set PWM frequency
-configuration.servoSR05Pin.freq(50)
 
 
-def move90left():
-    global _max_duty
-    # Servo at 0 degrees
-    configuration.servoSR05Pin.duty_u16(_max_duty)
+class PanTiltServos:
+    min_angle = 0
+    max_angle = 180
 
+    def __init__(self):
+        self.horizontal_servo = Servo(configuration.HORIZONTAL_SERVO_PIN)
+        self.vertical_servo = Servo(configuration.VERTICAL_SERVO_PIN)
+        self.horizontal_servo.move(90)
+        self.vertical_servo.move(90)
 
-def move90right():
-    global _min_duty
-    # servo at 180
-    configuration.servoSR05Pin.duty_u16(_min_duty)
+    def move_horizontally(self, value):
+        new_angle = self.horizontal_servo.current_angle + value
+        if new_angle > self.max_angle or new_angle < self.min_angle:
+            return
+        self.horizontal_servo.move(new_angle)
 
-
-def movecenter():
-    global _half_duty
-    # servo at 90
-    configuration.servoSR05Pin.duty_u16(_half_duty)
-
-
-def stop():
-    configuration.servoSR05Pin.deinit()
+    def move_vertically(self, value):
+        new_angle = self.vertical_servo.current_angle + value
+        if new_angle > self.max_angle or new_angle < self.min_angle:
+            return
+        self.vertical_servo.move(new_angle)

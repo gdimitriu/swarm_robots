@@ -23,6 +23,7 @@
 from engines import break_engines, go, set_human_control, move_with_distance
 from engines import rotate_90_left, rotate_90_right, rotate_degree
 from engines import init_encoders, disable_encoders
+from pantiltservos import PanTiltServos
 import configuration
 
 
@@ -35,6 +36,7 @@ class Command:
         self.low_power_distance = configuration.LOW_POWER_DISTANCE
         self.sock = sock
         self.path_navigation = None
+        self.pan_tilt_camera = PanTiltServos()
 
     def set_path_navigation(self, path_navigation):
         self.path_navigation = path_navigation
@@ -160,5 +162,10 @@ class Command:
             else:
                 self.path_navigation.add_path_command(request[1:])
             self.sock.send("OK\r\n")
+        elif request[0] == 'T':
+            if request[1] == 'x':
+                self.pan_tilt_camera.move_horizontally(request[2:])
+            elif request[1] == 'y':
+                self.pan_tilt_camera.move_vertically(request[2:])
         else:  # unsupported command
             self.sock.send("OK\r\n")
