@@ -80,6 +80,7 @@ void RobotControl::init()
     connect(ui->stopButton, SIGNAL(clicked(bool)), this, SLOT(stop()));
     ui->robotRadioButton->setChecked(true);
     ui->cameraRadioButton->setChecked(false);
+    ui->cameraStep->setText("1");
 
     // power level
     ui->maximumPower->setText("4095");
@@ -252,6 +253,14 @@ void RobotControl::forward()
         sendPowerToRobotIfModified();
         sendOneWay("M1,0#");
     }
+    else if ( ui->cameraRadioButton->isChecked() )
+    {
+        QString message;
+        message.append("Ty");
+        message.append(ui->cameraStep->text());
+        message.append("#");
+        sendOneWay(message);
+    }
     currentButton = ui->forwardButton;
 }
 
@@ -266,6 +275,14 @@ void RobotControl::backward()
     {
         sendPowerToRobotIfModified();
         sendOneWay("M-1,0#");
+    }
+    else if ( ui->cameraRadioButton->isChecked() )
+    {
+        QString message;
+        message.append("Ty-");
+        message.append(ui->cameraStep->text());
+        message.append("#");
+        sendOneWay(message);
     }
     currentButton = ui->backwardButton;
 }
@@ -282,6 +299,14 @@ void RobotControl::left()
         sendPowerToRobotIfModified();
         sendOneWay("M0,-1#");
     }
+    else if ( ui->cameraRadioButton->isChecked() )
+    {
+        QString message;
+        message.append("Tx-");
+        message.append(ui->cameraStep->text());
+        message.append("#");
+        sendOneWay(message);
+    }
     currentButton = ui->leftButton;
 }
 
@@ -296,6 +321,14 @@ void RobotControl::right()
     {
         sendPowerToRobotIfModified();
         sendOneWay("M0,1#");
+    }
+    else if ( ui->cameraRadioButton->isChecked() )
+    {
+        QString message;
+        message.append("Tx");
+        message.append(ui->cameraStep->text());
+        message.append("#");
+        sendOneWay(message);
     }
     currentButton = ui->rightButton;
 }
