@@ -28,8 +28,8 @@
 
 #define SERVER_PORT 4242
 
-#define SERIAL_DEBUG
+//#define SERIAL_DEBUG
 
-#define RX_PIN 15
+#define RX_PIN 13
 #define TX_PIN 14
 #endif

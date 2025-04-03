@@ -22,17 +22,15 @@
 
 #include <WiFi.h>
 #include "configuration.h"
-#include <SoftwareSerial.h>
 #include "camera_streaming.h"
 #include "soc/soc.h"
 #include "soc/rtc_cntl_reg.h"
 
-const char* ssid     = "your-SSID";
-const char* password = "your-PASSWORD";
+const char* ssid     = "YOUR_SSID";
+const char* password = "YOUR_PASSWORD";
 
 WiFiServer server(SERVER_PORT);
 WiFiClient client;
-SoftwareSerial picoSerial(RX_PIN, TX_PIN); // RX, TX
 
 // for input data from wifi
 boolean cleanupSerial;
@@ -48,10 +46,10 @@ char inPicoChar;
 
 void setup()
 {
-    //WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); //disable brownout detector
+    WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); //disable brownout detector
     isValidInput = false;
     cleanupSerial = false;
-    picoSerial.begin(115200);
+    Serial2.begin(115200, SERIAL_8N1, RX_PIN, TX_PIN);
 #ifdef SERIAL_DEBUG    
     Serial.begin(115200);
 #endif
@@ -116,10 +114,6 @@ void receiveCommands() {
           inChar = client.read(); // Read a character
           if ( inChar=='\r' || inChar=='\n' || inChar =='\0' || inChar < 35 || inChar > 122 ) {
             continue;
-          }
-          //commands start with a letter capital or small
-          if ( indexReceive == 0 && !( ( inChar >64 && inChar <91 ) || ( inChar > 96 && inChar<123 ) ) ) {
-            continue;
           }    
           inData[indexReceive++] = inChar; // Store it
           inData[indexReceive] = '\0'; // Null terminate the string
@@ -140,7 +134,8 @@ void receiveCommands() {
           inPicoData[i] = '\0';
         }
         indexPicoReceive = 0;
-        picoSerial.println(inData);
+        Serial2.print(inData);
+        makeCleanup();
       } else if ( cleanupSerial ) {
 #ifdef SERIAL_DEBUG        
         Serial.print("indexReceive = ");Serial.println(indexReceive);
@@ -152,13 +147,19 @@ void receiveCommands() {
         delay(10);
       }
     }
-    while(picoSerial.available() > 0)
+    while(Serial2.available() > 0)
     {
-      inPicoChar = picoSerial.read();
+      inPicoChar = Serial2.read();
+#ifdef SERIAL_DEBUG 
+      Serial.print(inPicoChar);
+#endif
       inPicoData[indexPicoReceive++] = inPicoChar;
       if (inPicoChar == '\n')
       {
         inPicoData[indexPicoReceive] = '\0';
+#ifdef SERIAL_DEBUG 
+        Serial.print(inPicoData);
+#endif        
         client.print(inPicoData);
       }
     }
@@ -176,7 +177,7 @@ void receiveCommands() {
 void loop()
 {
   if ( !hasConnection ) {
-    client = server.available();   // listen for incoming clients
+    client = server.available();   // listen for incoming clients on
     if (client) {
 #ifdef SERIAL_DEBUG
         Serial.println("New Client.");

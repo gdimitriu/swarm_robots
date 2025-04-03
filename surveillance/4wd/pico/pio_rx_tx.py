@@ -51,6 +51,27 @@ def uart_rx():
     # fmt: on
 
 
+
+@asm_pio(
+    autopush=True,
+    push_thresh=8,
+    in_shiftdir=rp2.PIO.SHIFT_RIGHT,
+    fifo_join=PIO.JOIN_RX,
+)
+def uart_rx_mini():
+    # fmt: off
+    # Wait for start bit
+    wait(0, pin, 0)
+    # Preload bit counter, delay until eye of first data bit
+    set(x, 7)                 [10]
+    # Loop 8 times
+    label("bitloop")
+    # Sample data
+    in_(pins, 1)
+    # Each iteration is 8 cycles
+    jmp(x_dec, "bitloop")     [6]
+    # fmt: on
+
 @asm_pio(sideset_init=PIO.OUT_HIGH, out_init=PIO.OUT_HIGH, out_shiftdir=PIO.SHIFT_RIGHT)
 def uart_tx():
     # Block with TX deasserted until data available
@@ -82,7 +103,7 @@ class SerialRxTx:
         # Set up the state machine we're going to use to receive the characters.
         self.sm_rx = StateMachine(
             1,
-            globals()["uart_rx"],
+            globals()["uart_rx_mini"],
             freq=8 * self.boudrate,
             in_base=self.pin_rx,  # For WAIT, IN
             jmp_pin=self.pin_rx,  # For JMP

@@ -60,7 +60,7 @@ def uart_rx():
 
 # Set up the state machine we're going to use to receive the characters.
 _sm = StateMachine(
-    0,
+    2,
     globals()["uart_rx"],
     freq=8 * UART_BAUD,
     in_base=configuration.PIO_RX_PIN,  # For WAIT, IN
