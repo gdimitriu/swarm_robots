@@ -1,6 +1,0 @@
-[submodule "DroidControlCenter"]
-	path = DroidControlCenter
-	url = git@github.com:gdimitriu/DroidControlCenter.git
-[submodule "waiterHomeRobot"]
-	path = waiterHomeRobot
-	url = git@github.com:gdimitriu/waiterHomeRobot.git
