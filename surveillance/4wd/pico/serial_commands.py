@@ -31,8 +31,8 @@ def receive_commands():
     command = Command(sock)
     PathNavigation(command)
     while True:
-        request = sock.readline(1024)
+        request = sock.readline()
         if configuration.DEBUG_MODE:
             print(request)
         if request != b'' and request != b"exit#\n":
-            command.move_data(request[:-2])
+            command.move_data(request[:-1])

@@ -36,11 +36,10 @@ class PathNavigation:
         for command in self.current_path_data:
             if configuration.DEBUG_MODE:
                 print("MoveDirect(%s)" % command)
-            command = command.encode("ascii")
             self.commands.move_data(command)
 
     def move_reverse(self):
-        self.commands.move_data(b"m0,180")
+        self.commands.move_data("m0,180")
         for command in reversed(self.current_path_data):
             if configuration.DEBUG_MODE:
                 print("MoveReverse(%s)" % command)
@@ -49,14 +48,12 @@ class PathNavigation:
                 if values[1] != 0:
                     values[1] = - int(values[1])
                     command_new = "m" + values[0] + "," + str(values[1])
-                    command_new = command_new.encode("ascii")
                     if configuration.DEBUG_MODE:
                         print("RotateReverse(%s)" % command_new)
                     self.commands.move_data(command_new)
                     continue
-            command = command.encode("ascii")
             self.commands.move_data(command)
-        self.commands.move_data(b"m0,180")
+        self.commands.move_data("m0,180")
 
     def move_direct_with_file(self, file):
         self.current_path_file = file

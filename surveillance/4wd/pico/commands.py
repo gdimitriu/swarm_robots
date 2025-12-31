@@ -51,30 +51,30 @@ class Command:
         if len(request) == 1:
             self.command_without_data(request)
         else:
-            self.command_with_data(request.decode("ascii"))
+            self.command_with_data(request)
 
     def command_without_data(self, request):
         if configuration.DEBUG_MODE:
             print("CommandWithoutData(%s)" % request)
-        if request == b"v":
+        if request == 'v':
             self.sock.send("%g\r\n" % self.min_power)
-        elif request == b'V':
+        elif request == 'V':
             self.sock.send("%g\r\n" % self.max_power)
-        elif request == b'c':
+        elif request == 'c':
             self.sock.send("%g\r\n" % self.current_power)
-        elif request == b'd':
+        elif request == 'd':
             self.sock.send("%g\r\n" % self.low_power_distance)
-        elif request == b's':
+        elif request == 's':
             self.sock.send("%g\r\n" % self.stop_distance)
-        elif request == b'b':
+        elif request == 'b':
             break_engines()
-        elif request == b'D':
+        elif request == 'D':
             self.path_navigation.move_direct()
             self.sock.send("OK\r\n")
-        elif request == b'B':
+        elif request == 'B':
             self.path_navigation.move_reverse()
             self.sock.send("OK\r\n")
-        elif request == b'n':
+        elif request == 'n':
             self.path_navigation.clear_navigation()
             self.sock.send("OK\r\n")
 
@@ -164,8 +164,10 @@ class Command:
             self.sock.send("OK\r\n")
         elif request[0] == 'T':
             if request[1] == 'x':
-                self.pan_tilt_camera.move_horizontally(request[2:])
+                if configuration.DEBUG_MODE:
+                    print(request)
+                self.pan_tilt_camera.move_horizontally(int(request[2:]))
             elif request[1] == 'y':
-                self.pan_tilt_camera.move_vertically(request[2:])
+                self.pan_tilt_camera.move_vertically(int(request[2:]))
         else:  # unsupported command
             self.sock.send("OK\r\n")

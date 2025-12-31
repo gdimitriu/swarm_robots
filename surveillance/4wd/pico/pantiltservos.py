@@ -1,7 +1,7 @@
 """
  moving robot raspberry pico and wifi from ESP32-CAM
 
-oantiltservos (moving servos for camera)
+pantiltservos (moving servos for camera)
 
  Copyright 2025 Gabriel Dimitriu
   This file is part of swarm_robots project.

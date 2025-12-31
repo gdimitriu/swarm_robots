@@ -110,7 +110,7 @@ class SerialRxTx:
         )
         self.sm_rx.active(1)
 
-    def put(self, value):
+    def send(self, value):
         for s in value:
             self.sm_tx.put(s)
 
