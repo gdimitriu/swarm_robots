@@ -22,13 +22,11 @@
 #include "camera_streaming.h"
 #include "esp_camera.h"
 #include <WiFi.h>
+#include "board_model.h"
 
-#define CAMERA_MODEL_AI_THINKER
-
-#include "camera_pins.h"
 
 void startCameraServer();
-void setupLedFlash(int pin);
+void setupLedFlash();
 
 void initCamera()
 {  
@@ -100,7 +98,7 @@ void initCamera()
 
 // Setup LED FLash if LED pin is defined in camera_pins.h
 #if defined(LED_GPIO_NUM)
-  setupLedFlash(LED_GPIO_NUM);
+  setupLedFlash();
 #endif
 
   startCameraServer();

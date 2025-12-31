@@ -1,5 +1,5 @@
 /*
- * moving robot with exp32-cam camera
+ * moving robot with esp32-cam camera
  * Copyright 2024 Gabriel Dimitriu
  *
  * This file is part of swarm_robots project.
