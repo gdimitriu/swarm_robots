@@ -27,7 +27,6 @@
 #include <fstream>
 #include "robotcontroldashboard.h"
 #include <QWebEngineView>
-#include <VLCQtWidgets/WidgetVideo.h>
 
 RobotControl::RobotControl(QWidget *parent) :
     QMainWindow(parent),
@@ -42,10 +41,8 @@ RobotControl::RobotControl(QWidget *parent) :
     isMinMaxPowerChanged = MIN_MAX_POWER_CHANGES::NONE;
     isDistanceChanged = DISTANCE_CHANGES::NONE;
     isDebugMode = false;
-    vlcInstance = nullptr;
-    vlcMedia = nullptr;
-    vlcPlayer = nullptr;
     streamImageOrig = ui->streamImage;
+    cameraMoveTimer = nullptr;
 }
 
 RobotControl::~RobotControl()
@@ -80,7 +77,8 @@ void RobotControl::init()
     connect(ui->stopButton, SIGNAL(clicked(bool)), this, SLOT(stop()));
     ui->robotRadioButton->setChecked(true);
     ui->cameraRadioButton->setChecked(false);
-    ui->cameraStep->setText("1");
+    ui->cameraStepValue->setText("1");
+    ui->cameraTimerIntervalValue->setText("500");
 
     // power level
     ui->maximumPower->setText("4095");
@@ -116,7 +114,6 @@ void RobotControl::init()
     connect(ui->connectStreamButton, SIGNAL(clicked(bool)), this , SLOT(connectStream()));
     connect(ui->disconnectStreamButton, SIGNAL(clicked(bool)), this, SLOT(disconnectStream()));
     ui->streamingType->addItem("http","http");
-    ui->streamingType->addItem("vlc", "vlc");
     ui->startStopCommands->addItem("Yes", "Yes");
     ui->startStopCommands->addItem("No", "No");
 
@@ -257,9 +254,17 @@ void RobotControl::forward()
     {
         QString message;
         message.append("Ty");
-        message.append(ui->cameraStep->text());
+        message.append(ui->cameraStepValue->text());
         message.append("#");
         sendOneWay(message);
+        if (cameraMoveTimer == nullptr)
+        {
+            cameraDirection = CameraDirection::FORWARD;
+            cameraMoveTimer = new QTimer(this);
+            cameraMoveTimer->setInterval(ui->cameraTimerIntervalValue->text().toInt());
+            connect(cameraMoveTimer, SIGNAL(timeout()), this, SLOT(forward()));
+            cameraMoveTimer->start();
+        }
     }
     currentButton = ui->forwardButton;
 }
@@ -280,9 +285,17 @@ void RobotControl::backward()
     {
         QString message;
         message.append("Ty-");
-        message.append(ui->cameraStep->text());
+        message.append(ui->cameraStepValue->text());
         message.append("#");
         sendOneWay(message);
+        if (cameraMoveTimer == nullptr)
+        {
+            cameraDirection = CameraDirection::BACKWARD;
+            cameraMoveTimer = new QTimer(this);
+            cameraMoveTimer->setInterval(ui->cameraTimerIntervalValue->text().toInt());
+            connect(cameraMoveTimer, SIGNAL(timeout()), this, SLOT(backward()));
+            cameraMoveTimer->start();
+        }
     }
     currentButton = ui->backwardButton;
 }
@@ -303,9 +316,17 @@ void RobotControl::left()
     {
         QString message;
         message.append("Tx-");
-        message.append(ui->cameraStep->text());
+        message.append(ui->cameraStepValue->text());
         message.append("#");
         sendOneWay(message);
+        if (cameraMoveTimer == nullptr)
+        {
+            cameraDirection = CameraDirection::LEFT;
+            cameraMoveTimer = new QTimer(this);
+            cameraMoveTimer->setInterval(ui->cameraTimerIntervalValue->text().toInt());
+            connect(cameraMoveTimer, SIGNAL(timeout()), this, SLOT(left()));
+            cameraMoveTimer->start();
+        }
     }
     currentButton = ui->leftButton;
 }
@@ -326,9 +347,17 @@ void RobotControl::right()
     {
         QString message;
         message.append("Tx");
-        message.append(ui->cameraStep->text());
+        message.append(ui->cameraStepValue->text());
         message.append("#");
         sendOneWay(message);
+        if (cameraMoveTimer == nullptr)
+        {
+            cameraDirection = CameraDirection::RIGHT;
+            cameraMoveTimer = new QTimer(this);
+            cameraMoveTimer->setInterval(ui->cameraTimerIntervalValue->text().toInt());
+            connect(cameraMoveTimer, SIGNAL(timeout()), this, SLOT(right()));
+            cameraMoveTimer->start();
+        }
     }
     currentButton = ui->rightButton;
 }
@@ -349,7 +378,35 @@ void RobotControl::stop()
         return;
     }
     if ( ui->robotRadioButton->isChecked() )
+    {
         sendOneWay("b#");
+    }
+    else if (ui->cameraRadioButton->isChecked())
+    {
+        if (cameraMoveTimer != nullptr)
+        {
+            switch(cameraDirection)
+            {
+            case CameraDirection::FORWARD:
+                disconnect(cameraMoveTimer, SIGNAL(timeout()), this, SLOT(forward()));
+                break;
+            case CameraDirection::BACKWARD:
+                disconnect(cameraMoveTimer, SIGNAL(timeout()), this, SLOT(backward()));
+                break;
+            case CameraDirection::LEFT:
+                disconnect(cameraMoveTimer, SIGNAL(timeout()), this, SLOT(left()));
+                break;
+            case CameraDirection::RIGHT:
+                disconnect(cameraMoveTimer, SIGNAL(timeout()), this, SLOT(right()));
+                break;
+            case CameraDirection::NONE:
+                break;
+            }
+            cameraMoveTimer->stop();
+            delete cameraMoveTimer;
+            cameraMoveTimer = nullptr;
+        }
+    }
     if ( currentButton != nullptr )
     {
         currentButton->clearFocus();
@@ -1002,29 +1059,6 @@ void RobotControl::connectStream()
         ui->streamImage = webengine;
         ((QWebEngineView *)ui->streamImage)->load(url);
     }
-    else if ( ui->streamingType->currentText() == QString("vlc") )
-    {
-        QString url("tcp/mjpeg://" + ui->ipValue->text() + ":" + ui->cameraPort->text());
-        VlcWidgetVideo *vlcWidget = new VlcWidgetVideo(ui->centralWidget);
-        ui->streamImage = vlcWidget;
-        if (vlcInstance == nullptr )
-        {
-            vlcInstance = new VlcInstance(VlcCommon::args(), this);
-        }
-        if (vlcPlayer != nullptr)
-        {
-            delete vlcPlayer;
-        }
-        vlcPlayer = new VlcMediaPlayer(vlcInstance);
-        vlcPlayer->setVideoWidget(vlcWidget);
-        vlcWidget->setMediaPlayer(vlcPlayer);
-        if ( vlcMedia != nullptr )
-        {
-            delete vlcMedia;
-        }
-        vlcMedia = new VlcMedia(url,vlcInstance);
-        vlcPlayer->open(vlcMedia);
-    }
     ui->streamImage->restoreGeometry(geometry);
     ui->streamImage->setEnabled(true);
     ui->streamImage->setFixedSize(size);
@@ -1043,14 +1077,6 @@ void RobotControl::disconnectStream()
     if ( ui->streamingType->currentText() == QString("http") )
     {
         ((QWebEngineView *)ui->streamImage)->close();
-    }
-    else if ( ui->streamingType->currentText() == QString("vlc") )
-    {
-        vlcPlayer->stop();
-        delete vlcPlayer;
-        vlcPlayer = nullptr;
-        delete vlcMedia;
-        vlcMedia = nullptr;
     }
     delete ui->streamImage;
     ui->streamImage = streamImageOrig;
@@ -1108,4 +1134,16 @@ void RobotControl::closeEvent(QCloseEvent *event)
 void RobotControl::setCameraCommands(QString value)
 {
     ui->startStopCommands->setCurrentIndex(ui->startStopCommands->findText(value));
+}
+
+void RobotControl::setMovingCamera(bool value)
+{
+    if (!value)
+    {
+        ui->cameraTimerIntervalValue->clear();
+        ui->cameraTimerIntervalValue->setDisabled(true);
+        ui->cameraStepValue->clear();
+        ui->cameraStepValue->setDisabled(true);
+        ui->cameraRadioButton->setDisabled(true);
+    }
 }

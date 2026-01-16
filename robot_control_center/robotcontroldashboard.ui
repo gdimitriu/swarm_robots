@@ -113,7 +113,7 @@
        <x>10</x>
        <y>40</y>
        <width>103</width>
-       <height>24</height>
+       <height>26</height>
       </rect>
      </property>
      <layout class="QHBoxLayout" name="horizontalLayout_6">
@@ -138,8 +138,8 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>396</y>
-      <width>96</width>
+      <y>390</y>
+      <width>131</width>
       <height>18</height>
      </rect>
     </property>
@@ -264,6 +264,48 @@
      <string>Delete</string>
     </property>
    </widget>
+   <widget class="QGroupBox" name="hasMovingCameraGroup">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>470</y>
+      <width>120</width>
+      <height>80</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Moving Camera</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+    <widget class="QWidget" name="layoutWidget">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>30</y>
+       <width>101</width>
+       <height>26</height>
+      </rect>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout_4">
+      <item>
+       <widget class="QRadioButton" name="noMovingCamera">
+        <property name="text">
+         <string>No</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QRadioButton" name="hasMovingCamera">
+        <property name="text">
+         <string>Yes</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -271,7 +313,7 @@
      <x>0</x>
      <y>0</y>
      <width>649</width>
-     <height>30</height>
+     <height>23</height>
     </rect>
    </property>
   </widget>

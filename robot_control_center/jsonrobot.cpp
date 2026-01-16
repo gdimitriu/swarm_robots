@@ -86,6 +86,12 @@ QString JsonRobot::hasStartStop() const
     return camera->startStopCommand();
 }
 
+QString JsonRobot::hasMovingCamera() const
+{
+    if ( camera == nullptr)
+        return QString("No");
+    return camera->isMovingCamera();
+}
 void JsonRobot::setName(QString name)
 {
     this->name = name;

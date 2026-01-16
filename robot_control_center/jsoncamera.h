@@ -20,11 +20,14 @@ public:
     void setProtocol(QString protocol);
     QString startStopCommand() const;
     void setStartStopCommand(QString hasStartStop);
+    QString isMovingCamera() const;
+    void setMovingCamera(QString hasMovingCamera);
 private:
     QString present;
     QString port;
     QString protocol;
     QString hasStartStop;
+    QString hasMovingCamera;
 
 };
 

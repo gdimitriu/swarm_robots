@@ -24,7 +24,7 @@ from machine import Pin
 import configuration
 import math
 import ioe_sr05_pio
-from servo import movecenter, move90left, move90right
+from servoSR05 import movecenter, move90left, move90right
 
 direction = 0
 _current_left_front_encoder = 0

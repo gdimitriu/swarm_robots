@@ -34,5 +34,5 @@ def receive_commands():
         request = sock.readline()
         if configuration.DEBUG_MODE:
             print(request)
-        if request != b'' and request != b"exit#\n":
+        if request != '' and request != "exit#":
             command.move_data(request[:-1])

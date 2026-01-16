@@ -35,7 +35,7 @@ class PanTiltServos:
         self.vertical_servo.move(90)
 
     def move_horizontally(self, value):
-        new_angle = self.horizontal_servo.current_angle + value
+        new_angle = self.horizontal_servo.current_angle - value
         if new_angle > self.max_angle or new_angle < self.min_angle:
             return
         self.horizontal_servo.move(new_angle)
