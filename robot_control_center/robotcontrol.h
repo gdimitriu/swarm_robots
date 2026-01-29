@@ -31,6 +31,10 @@
 #include <QMenu>
 #include <QListWidgetItem>
 #include <QTimer>
+#include "movecommandbuilder.h"
+#include "pathnavcommandbuilder.h"
+#include "cameracommandbuilder.h"
+#include "socketoperations.h"
 
 namespace Ui {
 class RobotControl;
@@ -140,6 +144,11 @@ private:
         RIGHT
     };
     CameraDirection cameraDirection;
+
+    MoveCommandBuilder *moveCommandBuilder;
+    PathNavCommandBuilder *pathNavCommandBuilder;
+    CameraCommandBuilder *cameraCommandBuilder;
+    SocketOperations *socketOperations;
 };
 
 #endif // ROBOTCONTROL_H

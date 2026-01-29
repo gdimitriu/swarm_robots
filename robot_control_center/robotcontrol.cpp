@@ -27,6 +27,10 @@
 #include <fstream>
 #include "robotcontroldashboard.h"
 #include <QWebEngineView>
+#include "swarmmovecommandbuilder.h"
+#include "swarmpathnavcommandbuilder.h"
+#include "swarmcameracommandbuilder.h"
+#include "socketoperations.h"
 
 RobotControl::RobotControl(QWidget *parent) :
     QMainWindow(parent),
@@ -43,15 +47,31 @@ RobotControl::RobotControl(QWidget *parent) :
     isDebugMode = false;
     streamImageOrig = ui->streamImage;
     cameraMoveTimer = nullptr;
+    //until new type of commands are available
+    moveCommandBuilder = new SwarmMoveCommandBuilder();
+    pathNavCommandBuilder = new SwarmPathNavCommandBuilder();
+    cameraCommandBuilder = new SwarmCameraCommandBuilder();
+    socketOperations = nullptr;
 }
 
 RobotControl::~RobotControl()
 {
-    if ( socket != nullptr ) {
+    if ( socket != nullptr )
+    {
         socket->close();
         delete socket;
+        socket = nullptr;
     }
     delete ui;
+    delete moveCommandBuilder;
+    moveCommandBuilder = nullptr;
+    delete pathNavCommandBuilder;
+    pathNavCommandBuilder = nullptr;
+    if (socketOperations != nullptr)
+    {
+        delete socketOperations;
+        socketOperations = nullptr;
+    }
 }
 
 void RobotControl::init()
@@ -222,6 +242,8 @@ void RobotControl::disconnectFrom()
         socket->close();
         delete socket;
         socket = nullptr;
+        delete socketOperations;
+        socketOperations = nullptr;
     }
     ui->disconnectButton->clearFocus();
 }
@@ -230,12 +252,22 @@ void RobotControl::sockDisconnected()
 {
     statusLine->setText("Disconnected");
     repaint();
+    if (socketOperations != nullptr)
+    {
+        delete socketOperations;
+        socketOperations = nullptr;
+    }
 }
 
 void RobotControl::sockConnected()
 {
     statusLine->setText("Connected");
     repaint();
+    if (socketOperations != nullptr)
+    {
+        delete socketOperations;
+        socketOperations = new SocketOperations(socket);
+    }
 }
 
 void RobotControl::forward()
@@ -248,15 +280,11 @@ void RobotControl::forward()
     if ( ui->robotRadioButton->isChecked() )
     {
         sendPowerToRobotIfModified();
-        sendOneWay("M1,0#");
+        sendOneWay(moveCommandBuilder->moveOrRotate("1", "0"));
     }
     else if ( ui->cameraRadioButton->isChecked() )
     {
-        QString message;
-        message.append("Ty");
-        message.append(ui->cameraStepValue->text());
-        message.append("#");
-        sendOneWay(message);
+        sendOneWay(cameraCommandBuilder->moveUp(ui->cameraStepValue->text()));
         if (cameraMoveTimer == nullptr)
         {
             cameraDirection = CameraDirection::FORWARD;
@@ -279,15 +307,11 @@ void RobotControl::backward()
     if ( ui->robotRadioButton->isChecked() )
     {
         sendPowerToRobotIfModified();
-        sendOneWay("M-1,0#");
+        sendOneWay(moveCommandBuilder->moveOrRotate("-1", "0"));
     }
     else if ( ui->cameraRadioButton->isChecked() )
     {
-        QString message;
-        message.append("Ty-");
-        message.append(ui->cameraStepValue->text());
-        message.append("#");
-        sendOneWay(message);
+        sendOneWay(cameraCommandBuilder->moveDown(ui->cameraStepValue->text()));
         if (cameraMoveTimer == nullptr)
         {
             cameraDirection = CameraDirection::BACKWARD;
@@ -310,15 +334,11 @@ void RobotControl::left()
     if ( ui->robotRadioButton->isChecked() )
     {
         sendPowerToRobotIfModified();
-        sendOneWay("M0,-1#");
+        sendOneWay(moveCommandBuilder->moveOrRotate("0", "-1"));
     }
     else if ( ui->cameraRadioButton->isChecked() )
     {
-        QString message;
-        message.append("Tx-");
-        message.append(ui->cameraStepValue->text());
-        message.append("#");
-        sendOneWay(message);
+        sendOneWay(cameraCommandBuilder->moveLeft(ui->cameraStepValue->text()));
         if (cameraMoveTimer == nullptr)
         {
             cameraDirection = CameraDirection::LEFT;
@@ -341,15 +361,11 @@ void RobotControl::right()
     if ( ui->robotRadioButton->isChecked() )
     {
         sendPowerToRobotIfModified();
-        sendOneWay("M0,1#");
+        sendOneWay(moveCommandBuilder->moveOrRotate("0", "1"));
     }
     else if ( ui->cameraRadioButton->isChecked() )
     {
-        QString message;
-        message.append("Tx");
-        message.append(ui->cameraStepValue->text());
-        message.append("#");
-        sendOneWay(message);
+        sendOneWay(cameraCommandBuilder->moveRight(ui->cameraStepValue->text()));
         if (cameraMoveTimer == nullptr)
         {
             cameraDirection = CameraDirection::RIGHT;
@@ -379,7 +395,7 @@ void RobotControl::stop()
     }
     if ( ui->robotRadioButton->isChecked() )
     {
-        sendOneWay("b#");
+        sendOneWay(moveCommandBuilder->stop());
     }
     else if (ui->cameraRadioButton->isChecked())
     {
@@ -449,23 +465,14 @@ QString RobotControl::sendWithReply(QString message)
             ui->debugView->insertPlainText("Send data: ");
             ui->debugView->insertPlainText(message);
         }
-        socket->write(message.toLatin1());
-        socket->flush();
-        socket->waitForReadyRead();
-        QByteArray readData = socket->readAll();
-        while ( socket->bytesAvailable() > 0) {
-            QByteArray localReadData = socket->readAll();
-            if ( readData.isEmpty() )
-                break;
-            readData.append(localReadData);
-        }
+        QString readData = socketOperations->sendWithReply(message);
         if ( isDebugMode )
         {
             ui->debugView->moveCursor(QTextCursor::End);
             ui->debugView->insertPlainText("Receiving data: ");
-            ui->debugView->insertPlainText(QString(readData));
+            ui->debugView->insertPlainText(readData);
         }
-        return QString(readData);
+        return readData;
     }
     else
     {
@@ -498,23 +505,14 @@ void RobotControl::sendOneWay(QString message, bool hasAck)
             ui->debugView->insertPlainText("Send data: ");
             ui->debugView->insertPlainText(message);
         }
-        socket->write(message.toLatin1());
-        socket->flush();
+        QString ackMessage = socketOperations->sendOneWay(message, hasAck);
         if ( hasAck )
         {
-            socket->waitForReadyRead();
-            QByteArray readData = socket->readAll();
-            QString str(readData);
-            while ( !(str.contains("OK\r\n") || str.contains("OK\n")) )
-            {
-                socket->waitForReadyRead();
-                str.append(socket->readAll());
-            }
             if ( isDebugMode )
             {
                 ui->debugView->moveCursor(QTextCursor::End);
                 ui->debugView->insertPlainText("Receiving ack data: ");
-                ui->debugView->insertPlainText(str);
+                ui->debugView->insertPlainText(ackMessage);
             }
         }
     }
@@ -531,31 +529,11 @@ void RobotControl::deployToRobot()
         ui->deployButton->clearFocus();
         return;
     }
-    QString value;
-    value.append("V");
-    value.append(ui->maximumPower->text());
-    value.append('#');
-    sendOneWay(value, true);
-    value.clear();
-    value.append("v");
-    value.append(ui->minimumPower->text());
-    value.append('#');
-    sendOneWay(value, true);
-    value.clear();
-    value.append("c");
-    value.append(ui->currentPowerLevel->text());
-    value.append('#');
-    sendOneWay(value, true);
-    value.clear();
-    value.append("s");
-    value.append(ui->stopDistance->text());
-    value.append('#');
-    sendOneWay(value, true);
-    value.clear();
-    value.append("d");
-    value.append(ui->lowPowerDistance->text());
-    value.append('#');
-    sendOneWay(value, true);
+    sendOneWay(moveCommandBuilder->setMaxPower(ui->maximumPower->text()), true);
+    sendOneWay(moveCommandBuilder->setMinPower(ui->minimumPower->text()), true);
+    sendOneWay(moveCommandBuilder->setCurrentPower(ui->currentPowerLevel->text()), true);
+    sendOneWay(moveCommandBuilder->setStopDistance(ui->stopDistance->text()), true);
+    sendOneWay(moveCommandBuilder->setLowPowerDistance(ui->lowPowerDistance->text()), true);
     ui->deployButton->clearFocus();
 }
 
@@ -566,18 +544,18 @@ void RobotControl::fetchFromRobot()
         ui->fetchButton->clearFocus();
         return;
     }
-    QString value = sendWithReply("V#");
+    QString value = sendWithReply(moveCommandBuilder->getMaxPower());
     ui->maximumPower->setText(value.trimmed());
-    value = sendWithReply("v#");
+    value = sendWithReply(moveCommandBuilder->getMinPower());
     ui->minimumPower->setText(value.trimmed());
-    value = sendWithReply("c#");
+    value = sendWithReply(moveCommandBuilder->getCurrentPower());
     ui->currentPowerLevel->setText(value.trimmed());
     ui->powerLevel->setRange(ui->minimumPower->text().toInt(),ui->maximumPower->text().toInt());
     ui->powerLevel->setValue(ui->minimumPower->text().toInt());
     isMinMaxPowerChanged = MIN_MAX_POWER_CHANGES::NONE;
-    value = sendWithReply("s#");
+    value = sendWithReply(moveCommandBuilder->getStopDistance());
     ui->stopDistance->setText(value.trimmed());
-    value = sendWithReply("d#");
+    value = sendWithReply(moveCommandBuilder->getLowPowerDistance());
     ui->lowPowerDistance->setText(value.trimmed());
     ui->fetchButton->clearFocus();
 }
@@ -628,34 +606,17 @@ void RobotControl::lowPowerDistanceChanged()
 
 void RobotControl::sendPowerToRobotIfModified()
 {
-    QString value;
     switch( isMinMaxPowerChanged )
     {
     case MIN_MAX_POWER_CHANGES::MAX:
-        value.clear();
-        value.append("V");
-        value.append(ui->maximumPower->text());
-        value.append('#');
-        sendOneWay(value, true);
+        sendOneWay(moveCommandBuilder->setMaxPower(ui->maximumPower->text()), true);
         break;
     case MIN_MAX_POWER_CHANGES::MIN:
-        value.clear();
-        value.append("v");
-        value.append(ui->minimumPower->text());
-        value.append('#');
-        sendOneWay(value, true);
+        sendOneWay(moveCommandBuilder->setMinPower(ui->minimumPower->text()), true);
         break;
     case MIN_MAX_POWER_CHANGES::MINMAX:
-        value.clear();
-        value.append("V");
-        value.append(ui->maximumPower->text());
-        value.append('#');
-        sendOneWay(value, true);
-        value.clear();
-        value.append("v");
-        value.append(ui->minimumPower->text());
-        value.append('#');
-        sendOneWay(value, true);
+        sendOneWay(moveCommandBuilder->setMaxPower(ui->maximumPower->text()), true);
+        sendOneWay(moveCommandBuilder->setMinPower(ui->minimumPower->text()), true);
         break;
     default:
         break;
@@ -663,41 +624,21 @@ void RobotControl::sendPowerToRobotIfModified()
     isMinMaxPowerChanged = MIN_MAX_POWER_CHANGES::NONE;
     if ( isCurrentPowerChanges )
     {
-        value.clear();
-        value.append("c");
-        value.append(ui->currentPowerLevel->text());
-        value.append('#');
-        sendOneWay(value, true);
+        sendOneWay(moveCommandBuilder->setCurrentPower(ui->currentPowerLevel->text()), true);
         isCurrentPowerChanges = false;
     }
 
     switch( isDistanceChanged )
     {
     case DISTANCE_CHANGES::STOP :
-        value.clear();
-        value.append("s");
-        value.append(ui->stopDistance->text());
-        value.append('#');
-        sendOneWay(value, true);
+        sendOneWay(moveCommandBuilder->setStopDistance(ui->stopDistance->text()), true);
         break;
     case DISTANCE_CHANGES::LOW_POWER:
-        value.clear();
-        value.append("d");
-        value.append(ui->lowPowerDistance->text());
-        value.append('#');
-        sendOneWay(value, true);
+        sendOneWay(moveCommandBuilder->setLowPowerDistance(ui->lowPowerDistance->text()), true);
         break;
     case DISTANCE_CHANGES::BOTH :
-        value.clear();
-        value.append("s");
-        value.append(ui->stopDistance->text());
-        value.append('#');
-        sendOneWay(value, true);
-        value.clear();
-        value.append("d");
-        value.append(ui->lowPowerDistance->text());
-        value.append('#');
-        sendOneWay(value, true);
+        sendOneWay(moveCommandBuilder->setStopDistance(ui->stopDistance->text()), true);
+        sendOneWay(moveCommandBuilder->setLowPowerDistance(ui->lowPowerDistance->text()), true);
         break;
     default:
         break;
@@ -878,9 +819,7 @@ void RobotControl::deployNavigationPath()
     {
         if ( ui->listWidget->count() == 0 )
             return;
-        QString message;
-        message.append("n#");
-        sendOneWay(message, true);
+        sendOneWay(pathNavCommandBuilder->startDeploy(), true);
         switch((DEPLOY_RUN_TYPE) ui->deployedType->currentData().value<DEPLOY_RUN_TYPE>() )
         {
         case DEPLOY_RUN_TYPE::MEMORY :
@@ -890,11 +829,7 @@ void RobotControl::deployNavigationPath()
             QString fileToDeploy = ui->deployedFile->text();
             if ( fileToDeploy.isEmpty() )
                 return;
-            message.clear();
-            message.append("Nfb");
-            message.append(fileToDeploy);
-            message.append("#");
-            sendOneWay(message, true);
+            sendOneWay(pathNavCommandBuilder->deployFile(fileToDeploy), true);
             isFile = true;
             break;
         }
@@ -903,15 +838,11 @@ void RobotControl::deployNavigationPath()
         }
         for ( int i = 0; i < ui->listWidget->count(); ++i )
         {
-            QString message("N");
-            message.append(ui->listWidget->item(i)->text());
-            sendOneWay(message, true);
+            sendOneWay(pathNavCommandBuilder->deployCommand(ui->listWidget->item(i)->text()), true);
         }
         if(isFile == true)
         {
-            message.clear();
-            message.append("Nfe#");
-            sendOneWay(message, true);
+            sendOneWay("Nfe#", true);
         }
     }
 }
@@ -925,11 +856,7 @@ void RobotControl::saveDeployedPathToFile()
     QString fileToDeploy = ui->deployedFile->text();
     if ( fileToDeploy.isEmpty() )
         return;
-    QString message;
-    message.append("Nfs");
-    message.append(fileToDeploy);
-    message.append("#");
-    sendOneWay(message, true);
+    sendOneWay(pathNavCommandBuilder->saveToFile(fileToDeploy), true);
 }
 
 void RobotControl::loadNavigationPathFromFile()
@@ -941,11 +868,7 @@ void RobotControl::loadNavigationPathFromFile()
     QString fileToDeploy = ui->deployedFile->text();
     if ( fileToDeploy.isEmpty() )
         return;
-    QString message;
-    message.append("Nfl");
-    message.append(fileToDeploy);
-    message.append("#");
-    sendOneWay(message, true);
+    sendOneWay(pathNavCommandBuilder->loadFromFile(fileToDeploy), true);
 }
 
 void RobotControl::removeNavigationPathFile()
@@ -957,11 +880,7 @@ void RobotControl::removeNavigationPathFile()
     QString fileToDeploy = ui->deployedFile->text();
     if ( fileToDeploy.isEmpty() )
         return;
-    QString message;
-    message.append("Nfr");
-    message.append(fileToDeploy);
-    message.append("#");
-    sendOneWay(message, true);
+    sendOneWay(pathNavCommandBuilder->removeFile(fileToDeploy), true);
 }
 
 void RobotControl::fetchNavigationPath()
@@ -977,29 +896,22 @@ void RobotControl::runForwardWithPath()
 {
     if ( isConnected() )
     {
-        QString message;
         switch((DEPLOY_RUN_TYPE) ui->deployedType->currentData().value<DEPLOY_RUN_TYPE>() )
         {
         case DEPLOY_RUN_TYPE::MEMORY :
-            message.clear();
-            message.append("D#");
-            break;
+            sendOneWay(pathNavCommandBuilder->runForward(), true);
+            return;
         case DEPLOY_RUN_TYPE::FILE :
         {
             QString fileToDeploy = ui->deployedFile->text();
             if ( fileToDeploy.isEmpty() )
                 return;
-            message.clear();
-            message.append("ND");
-            message.append(fileToDeploy);
-            message.append("#");
-            break;
+            sendOneWay(pathNavCommandBuilder->runForward(fileToDeploy), true);
+            return;
         }
         case DEPLOY_RUN_TYPE::EEPROM :
             return;
         }
-        sendOneWay(message, true);
-        return;
     }
 }
 
@@ -1011,25 +923,19 @@ void RobotControl::runBackwardWithPath()
         switch((DEPLOY_RUN_TYPE) ui->deployedType->currentData().value<DEPLOY_RUN_TYPE>() )
         {
         case DEPLOY_RUN_TYPE::MEMORY :
-            message.clear();
-            message.append("B#");
-            break;
+            sendOneWay(pathNavCommandBuilder->runBackward(), true);
+            return;
         case DEPLOY_RUN_TYPE::FILE :
         {
             QString fileToDeploy = ui->deployedFile->text();
             if ( fileToDeploy.isEmpty() )
                 return;
-            message.clear();
-            message.append("NB");
-            message.append(fileToDeploy);
-            message.append("#");
-            break;
+            sendOneWay(pathNavCommandBuilder->runBackward(fileToDeploy), true);
+            return;
         }
         case DEPLOY_RUN_TYPE::EEPROM :
             return;
         }
-        sendOneWay(message, true);
-        return;
     }
 }
 
@@ -1047,8 +953,7 @@ void RobotControl::connectStream()
 {
     if ( ui->startStopCommands->currentText().compare("yes",Qt::CaseInsensitive) == 0 )
     {
-        QString value = "T#";
-        sendOneWay(value);
+        sendOneWay(cameraCommandBuilder->startStreaming());
     }
     QByteArray geometry = ui->streamImage->saveGeometry();
     QSize size = ui->streamImage->size();
@@ -1071,8 +976,7 @@ void RobotControl::disconnectStream()
 {
     if ( ui->startStopCommands->currentText().compare("yes",Qt::CaseInsensitive) == 0 )
     {
-        QString value = "t#";
-        sendOneWay(value);
+        sendOneWay(cameraCommandBuilder->stopStraming());
     }
     if ( ui->streamingType->currentText() == QString("http") )
     {

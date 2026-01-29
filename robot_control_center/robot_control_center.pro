@@ -33,13 +33,24 @@ SOURCES += \
         robotcontrol.cpp \
     robotcontroldashboard.cpp \
     jsonrobot.cpp \
-    jsoncamera.cpp
+    jsoncamera.cpp \
+    socketoperations.cpp \
+    swarmcameracommandbuilder.cpp \
+    swarmmovecommandbuilder.cpp \
+    swarmpathnavcommandbuilder.cpp
 
 HEADERS += \
+    cameracommandbuilder.h \
+    movecommandbuilder.h \
+    pathnavcommandbuilder.h \
         robotcontrol.h \
     robotcontroldashboard.h \
     jsonrobot.h \
-    jsoncamera.h
+    jsoncamera.h \
+    socketoperations.h \
+    swarmcameracommandbuilder.h \
+    swarmmovecommandbuilder.h \
+    swarmpathnavcommandbuilder.h
 
 FORMS += \
         robotcontrol.ui \
