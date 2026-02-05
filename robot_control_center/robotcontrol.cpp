@@ -231,6 +231,15 @@ void RobotControl::connectTo()
     connect(socket, SIGNAL(disconnected()), this, SLOT(sockDisconnected()));
     socket->connectToHost(ui->ipValue->text(), ui->portValue->text().toInt());
     ui->connectButton->clearFocus();
+    if (socketOperations != nullptr)
+    {
+        delete socketOperations;
+        socketOperations = new SocketOperations(socket);
+    }
+    else
+    {
+        socketOperations = new SocketOperations(socket);
+    }
 }
 
 void RobotControl::disconnectFrom()
@@ -257,17 +266,17 @@ void RobotControl::sockDisconnected()
         delete socketOperations;
         socketOperations = nullptr;
     }
+    if (socket != nullptr)
+    {
+        delete socket;
+        socket = nullptr;
+    }
 }
 
 void RobotControl::sockConnected()
 {
     statusLine->setText("Connected");
     repaint();
-    if (socketOperations != nullptr)
-    {
-        delete socketOperations;
-        socketOperations = new SocketOperations(socket);
-    }
 }
 
 void RobotControl::forward()

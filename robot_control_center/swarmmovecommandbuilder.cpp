@@ -72,4 +72,5 @@ QString SwarmMoveCommandBuilder::setCurrentPower(QString value)
     QString message("c");
     message.append(value);
     message.append("#");
+    return message;
 }
