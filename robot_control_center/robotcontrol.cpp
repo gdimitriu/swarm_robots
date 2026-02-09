@@ -247,12 +247,9 @@ void RobotControl::disconnectFrom()
     if ( socket != nullptr )
     {
         sendOneWay("exit#", false);
+        disconnect(socket, SIGNAL(disconnected()), this, SLOT(sockDisconnected()));
         socket->disconnectFromHost();
-        socket->close();
-        delete socket;
-        socket = nullptr;
-        delete socketOperations;
-        socketOperations = nullptr;
+        sockDisconnected();
     }
     ui->disconnectButton->clearFocus();
 }

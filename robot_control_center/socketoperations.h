@@ -6,7 +6,8 @@ class SocketOperations
 {
 public:
     SocketOperations(QTcpSocket *socket);
-    void disonnect();
+    ~SocketOperations();
+    void disconnect();
     QString sendOneWay(QString message, bool hasAck = false);
     QString sendWithReply(QString message);
 private:

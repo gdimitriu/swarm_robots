@@ -5,7 +5,12 @@ SocketOperations::SocketOperations(QTcpSocket *socket)
     this->socket = socket;
 }
 
-void SocketOperations::disonnect()
+SocketOperations::~SocketOperations()
+{
+
+}
+
+void SocketOperations::disconnect()
 {
 
 }
