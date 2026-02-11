@@ -32,7 +32,7 @@ QString SwarmCameraCommandBuilder::moveUp(QString value)
 }
 QString SwarmCameraCommandBuilder::moveDown(QString value)
 {
-    QString message("Ty");
+    QString message("Ty-");
     message.append(value);
     message.append("#");
     return message;

@@ -247,6 +247,7 @@ void RobotControl::disconnectFrom()
     if ( socket != nullptr )
     {
         sendOneWay("exit#", false);
+        disconnect(socket, SIGNAL(connected()), this, SLOT(sockConnected()));
         disconnect(socket, SIGNAL(disconnected()), this, SLOT(sockDisconnected()));
         socket->disconnectFromHost();
         sockDisconnected();

@@ -54,8 +54,8 @@ IOE_SR05_DISABLE = True
 # servo
 servoSR05Pin = PWM(Pin(22))
 # IOE-SR05
-PIO_RX_PIN = Pin(5, Pin.IN, Pin.PULL_UP)
-SR05EN = Pin(4, Pin.OUT)
+PIO_RX_PIN = Pin(3, Pin.IN, Pin.PULL_UP)
+SR05EN = Pin(7, Pin.OUT)
 SR05EN.high()
 # IOE-SR05
 MAX_RANGE_SENSOR = 200
@@ -70,7 +70,7 @@ right_front_sensor = Pin(12, Pin.IN, Pin.PULL_UP)
 left_rear_sensor = Pin(0, Pin.IN, Pin.PULL_UP)
 right_rear_sensor = Pin(6, Pin.IN, Pin.PULL_UP)
 
-ESP_RX = 20
-ESP_TX = 21
-HORIZONTAL_SERVO_PIN = 26
-VERTICAL_SERVO_PIN = 27
+ESP_RX = 26
+ESP_TX = 27
+HORIZONTAL_SERVO_PIN = 20
+VERTICAL_SERVO_PIN = 21
