@@ -12,8 +12,7 @@ public:
     virtual QString moveRight(QString value);
     virtual QString moveUp(QString value);
     virtual QString moveDown(QString value);
-    virtual QString moveCenterHorinzonal();
-    virtual QString moveCenterVertical();
+    virtual QString moveCenter();
     virtual QString startStreaming();
     virtual QString stopStraming();
 };

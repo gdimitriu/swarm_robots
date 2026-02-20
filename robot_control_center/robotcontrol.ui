@@ -617,6 +617,19 @@
      </item>
     </layout>
    </widget>
+   <widget class="QPushButton" name="centerCamera">
+    <property name="geometry">
+     <rect>
+      <x>200</x>
+      <y>730</y>
+      <width>111</width>
+      <height>26</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Center camera</string>
+    </property>
+   </widget>
    <zorder>layoutWidget</zorder>
    <zorder>layoutWidget</zorder>
    <zorder>layoutWidget</zorder>
@@ -630,6 +643,7 @@
    <zorder>debugView</zorder>
    <zorder>groupBox</zorder>
    <zorder>streamImage</zorder>
+   <zorder>centerCamera</zorder>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">

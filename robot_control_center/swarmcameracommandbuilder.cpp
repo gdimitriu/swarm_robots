@@ -37,17 +37,9 @@ QString SwarmCameraCommandBuilder::moveDown(QString value)
     message.append("#");
     return message;
 }
-QString SwarmCameraCommandBuilder::moveCenterHorinzonal()
+QString SwarmCameraCommandBuilder::moveCenter()
 {
-    QString message;
-
-    return message;
-}
-QString SwarmCameraCommandBuilder::moveCenterVertical()
-{
-    QString message;
-
-    return message;
+    return QString("Tc#");
 }
 
 QString SwarmCameraCommandBuilder::startStreaming()

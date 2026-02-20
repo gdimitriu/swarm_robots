@@ -99,6 +99,7 @@ void RobotControl::init()
     ui->cameraRadioButton->setChecked(false);
     ui->cameraStepValue->setText("1");
     ui->cameraTimerIntervalValue->setText("500");
+    connect(ui->centerCamera, SIGNAL(pressed()), this, SLOT(centerCamera()));
 
     // power level
     ui->maximumPower->setText("4095");
@@ -1057,4 +1058,10 @@ void RobotControl::setMovingCamera(bool value)
         ui->cameraStepValue->setDisabled(true);
         ui->cameraRadioButton->setDisabled(true);
     }
+}
+
+void RobotControl::centerCamera()
+{
+    QString centerCameraCommand = cameraCommandBuilder->moveCenter();
+    socketOperations->sendOneWay(centerCameraCommand);
 }

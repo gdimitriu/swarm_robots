@@ -81,6 +81,7 @@ private slots:
     void enableDebugMode();
     void disableDebugMode();
     void clearDebugMode();
+    void centerCamera();
 public:
     explicit RobotControl(QWidget *parent = 0);
     ~RobotControl();

@@ -10,8 +10,7 @@ public:
     virtual QString moveRight(QString value) = 0;
     virtual QString moveUp(QString value) = 0;
     virtual QString moveDown(QString value) = 0;
-    virtual QString moveCenterHorinzonal() = 0;
-    virtual QString moveCenterVertical() = 0;
+    virtual QString moveCenter() = 0;
     virtual QString startStreaming() = 0;
     virtual QString stopStraming() = 0;
 };

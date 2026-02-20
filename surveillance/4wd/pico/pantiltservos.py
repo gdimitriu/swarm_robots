@@ -45,3 +45,9 @@ class PanTiltServos:
         if new_angle > self.max_angle or new_angle < self.min_angle:
             return
         self.vertical_servo.move(new_angle)
+
+    def move_center(self):
+        self.horizontal_servo.move(90)
+        self.vertical_servo.move(90)
+        self.horizontal_servo.current_angle = 90
+        self.vertical_servo.current_angle = 90

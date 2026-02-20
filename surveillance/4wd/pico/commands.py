@@ -163,11 +163,13 @@ class Command:
                 self.path_navigation.add_path_command(request[1:])
             self.sock.send("OK\r\n")
         elif request[0] == 'T':
+            if configuration.DEBUG_MODE:
+                print(request)
             if request[1] == 'x':
-                if configuration.DEBUG_MODE:
-                    print(request)
                 self.pan_tilt_camera.move_horizontally(int(request[2:]))
             elif request[1] == 'y':
                 self.pan_tilt_camera.move_vertically(int(request[2:]))
+            elif request[1] == "c":
+                self.pan_tilt_camera.move_center()
         else:  # unsupported command
             self.sock.send("OK\r\n")
