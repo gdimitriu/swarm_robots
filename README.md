@@ -17,9 +17,7 @@ It uses ESP32 WROOM and it has proximity sensors.
 
 It could be controlled only by human using WIFI.
 
-### Surveillance robot
-
-#### esp32-cam
+### Surveillance robots
 
 [surveillance](surveillance/README.md)
 
